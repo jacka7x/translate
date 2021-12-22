@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+    "version": "0.0",
+    "name": "PLACEHOLDER_EXT_NAME",
+    
+    "icons": {
+        // X size
+        // XX size
+    },
+
+    "browser_action": {
+        // "browser_style": true,
+        // "default_icon": {
+        //   "16": "button/geo-16.png",
+        //   "32": "button/geo-32.png"
+        // },
+        "default_title": "DEFAULT_TITLE",
+        "default_popup": "popup.html"
+      }
+}
