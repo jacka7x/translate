@@ -1,0 +1,41 @@
+// CSS custom properties vs. sass variables, what is better?
+:root{
+    --popup-box-width: 300px;
+    --popup-box-height: 100px;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: #202020;
+    height: var(--popup-box-height);
+    width: var(--popup-box-width);
+
+    // possibly change to grid
+    display: flex;
+    flex-direction: column;
+}
+
+#session-init-button{
+    align-self: center;
+
+    // this is not working as expected (flexbox should be 100px high)
+    // justify-self: flex-end;
+    width: 4rem;
+    height: 1rem;
+
+    background-color: rgb(150, 219, 219);
+    border: none;
+    border-radius: 1rem;
+
+    &:hover {
+        background-color:yellow;
+    }
+
+    &:active {
+        background-color:rgb(0, 255, 13);
+    }
+}
