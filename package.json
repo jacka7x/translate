@@ -5,10 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "css": "sass --watch ./popup/popup.scss ./popup/popup.css",
+    "dev": "sass --watch ./popup/popup.scss ./popup/popup.css & tsc -w",
     "css now": "sass ./popup/popup.scss ./popup/popup.css"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "tsc-watch": "^4.6.0"
+  },
+  "dependencies": {
+    "@types/chrome": "^0.0.171"
+  }
 }
