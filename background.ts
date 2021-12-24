@@ -1,1 +1,1 @@
-// watch this again https://www.youtube.com/watch?v=ew9ut7ixIlI
+console.log("background.js started")

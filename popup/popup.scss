@@ -17,6 +17,9 @@ body{
     // possibly change to grid
     display: flex;
     flex-direction: column;
+
+    // dont want to use this- want to use justify-self
+    justify-content: center;
 }
 
 #session-init-button{
@@ -24,8 +27,8 @@ body{
 
     // this is not working as expected (flexbox should be 100px high)
     // justify-self: flex-end;
-    width: 4rem;
-    height: 1rem;
+    width: 8rem;
+    height: 2rem;
 
     background-color: rgb(150, 219, 219);
     border: none;
@@ -37,5 +40,9 @@ body{
 
     &:active {
         background-color:rgb(0, 255, 13);
+    }
+
+    &.active{
+        border: 3px solid white;
     }
 }

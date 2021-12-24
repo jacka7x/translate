@@ -1,18 +1,39 @@
-// need to enable / disable content-script cursor checking with button push
-// learn some more typescript
+// interface for HTMLElement prototype method
+interface HTMLElement {
+    setActive: (active: boolean) => void
+}
 
+HTMLElement.prototype.setActive = function(active: boolean) {
+    active ? this.classList.add('active') : this.classList.remove('active')
+}
 
-// /// <reference types="chrome"/>
+// TOGGLE ACTIVE SESSION
+const sessionInitButton: HTMLElement = document.getElementById("session-init-button")!
 
-// const sessionInitButton: HTMLElement = document.getElementById("session-init-button")!;
+const setSessionActive = (active: boolean): void => {
+    chrome.storage.local.set({isActiveSession_local: active})
+}
 
-// // const input = {files: ['content-script.js']};
+const getSessionActive = (): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+        chrome.storage.local.get(['isActiveSession_local'], function (res) {
+            res.isActiveSession_local === undefined ?
+                reject() : resolve(res.isActiveSession_local)
+        })
+    })
+}
 
-// const sessionInitButton_EL: () => void = () => sessionInitButton
-//     .addEventListener("click", () => {
-//         console.log("Session initiated.");
-//         chrome.scripting.executeScript({files: ['content-script.js']});
-//     })
+const activeSessionToggle = async (): Promise<void> => {
+    const res: boolean = await getSessionActive()
+    
+    setSessionActive(!res)
+    sessionInitButton.setActive(!res)
+    sessionInitButton.innerHTML = `${await getSessionActive()}`
+}
 
-
-// sessionInitButton_EL();
+// run at start to set up button
+const setupSessionInitButton = ( async function() {
+    sessionInitButton.addEventListener("click", () => activeSessionToggle())
+    setSessionActive(false)
+    sessionInitButton.innerHTML = `${await getSessionActive()}`
+})()

@@ -14,12 +14,13 @@ body {
   width: var(--popup-box-width);
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 #session-init-button {
   align-self: center;
-  width: 4rem;
-  height: 1rem;
+  width: 8rem;
+  height: 2rem;
   background-color: #96dbdb;
   border: none;
   border-radius: 1rem;
@@ -29,6 +30,9 @@ body {
 }
 #session-init-button:active {
   background-color: #00ff0d;
+}
+#session-init-button.active {
+  border: 3px solid white;
 }
 
 /*# sourceMappingURL=popup.css.map */
