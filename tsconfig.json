@@ -2,6 +2,7 @@
   // Changed from default settings:
   // noImplicitAny -> ON
   // strictNullChecks -> ON
+  // commonjs -> OFF
 
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
