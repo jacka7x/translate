@@ -25,19 +25,19 @@
     ],
 
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "/background_scripts/background.js"
     },
 
     "content_scripts": [
         {   
             "matches": ["<all_urls>"],
-            "js": ["content-script.js"]
+            "js": ["/content_scripts/content-script.js"]
         }
     ],
 
     "web_accessible_resources": [
         {
-        "resources": ["word-selection.js"],
+        "resources": ["/content_scripts/word-selection.js"],
         "matches": ["<all_urls>"]
         }
     ] 
