@@ -17,8 +17,15 @@ class DOMWrapper {
   
     setActive(active: boolean) {
         active ? 
+            // how to deal with this null check?
             this.element.classList.add('active') :
             this.element.classList.remove('active')
+
+    }
+
+    setInnerHtml(html: string) {
+        // how to deal with this null check?
+        this.element.innerHTML = html
 
     }
 }
