@@ -1,9 +1,4 @@
 "use strict";
-// // interface for HTMLElement prototype method
-// interface HTMLElementWrapper extends HTMLElement {
-//     setActive: (active: boolean) => void
-//     element: HTMLElement
-// }
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,19 +8,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// HTMLElement.prototype.setActive = function(active: boolean) {
-//     active ? this.classList.add('active') : this.classList.remove('active')
+// it works!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+// sessionInitButton.element.addEventListener... (need to add .element)
+// class SpecialButton {
+//     element;
+//     constructor(id) {
+//         // super()
+//       this.element = document.getElementById(id);
+//     }
+//     setActive(active: boolean) {
+//         active ? 
+//             this.element.classList.add('active') :
+//             this.element.classList.remove('active')
+//     }
 // }
-const HTMLElementWrapper = function (element) {
-    this.element = element;
-    // return this.element
-};
-HTMLElementWrapper.prototype.setActive = function (active) {
-    active ? this.classList.add('active') : this.classList.remove('active');
-};
-// TOGGLE ACTIVE SESSION
-const tree = document.getElementById("session-init-button");
-const sessionInitButton = new HTMLElementWrapper(tree);
+// adds the setActive method to HTMLELement's prototype
+Object.defineProperty(HTMLElement.prototype, 'setActive', {
+    enumerable: false,
+    writable: false,
+    value: function (active) {
+        active ?
+            this.classList.add('active') :
+            this.classList.remove('active');
+    }
+});
+const sessionInitButton = document.getElementById("session-init-button");
 const setSessionActive = (active) => {
     chrome.storage.local.set({ isActiveSession_local: active });
 };
@@ -54,7 +61,7 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 // run at start to set up button
-const setupSessionInitButton = (function () {
+(function () {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (sessionInitButton) {

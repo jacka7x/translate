@@ -35,3 +35,5 @@ document.addEventListener("click", (event) => {
         console.error(error)
     }
 })
+
+export {}

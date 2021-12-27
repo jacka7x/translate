@@ -1,71 +1,41 @@
-// // interface for HTMLElement prototype method
-// interface HTMLElementWrapper extends HTMLElement {
-//     setActive: (active: boolean) => void
-//     element: HTMLElement
-// }
-
-// // interface HTMLElementWrapperCon {
-// //     new(ele: HTMLElement): HTMLElementWrapper
-// // }
-
-// interface StorageResponse {
-//     readonly [isActiveSession_local: string]: boolean
-// }
-
-// const HTMLElementWrapper = function (this: HTMLElementWrapper, element: HTMLElement){
-//     this.element = element
-// }
-
-// HTMLElementWrapper.prototype.setActive = function(active: boolean) {
-//     active ? this.classList.add('active') : this.classList.remove('active')
-// }
-
-// // function create(HTMLElementWrapper: HTMLElementWrapperCon, tree: HTMLElement): HTMLElementWrapper {
-// //     return new HTMLElementWrapper(tree)
-// // }
-
-// // TOGGLE ACTIVE SESSION
-// // const tree: HTMLElement | null = document.getElementById("session-init-button")
-// // const sessionInitButton: HTMLElementWrapper = create(HTMLElementWrapper, tree)
-
-// const tree: HTMLElement | null = document.getElementById("session-init-button")
-// const sessionInitButton: HTMLElementWrapper = new HTMLElementWrapper(tree)
-
-// const setSessionActive = (active: boolean): void => {
-//     chrome.storage.local.set({isActiveSession_local: active})
-// -----------------------------
-// interface for HTMLElement prototype method
-// interface HTMLElement {
-//     setActive: (active: boolean) => void
-// }
-
-interface HTMLElementWrapper extends HTMLElement {
-    setActive: (active: boolean) => void
-    element: HTMLElement
-}
-
 interface StorageResponse {
     readonly [isActiveSession_local: string]: boolean
 }
 
-// HTMLElement.prototype.setActive = function(active: boolean) {
-//     active ? this.classList.add('active') : this.classList.remove('active')
+interface HTMLElement{
+    setActive: (value: boolean) => void
+}
+
+// it works!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+// sessionInitButton.element.addEventListener... (need to add .element)
+// class SpecialButton {
+//     element;
+  
+//     constructor(id) {
+//         // super()
+//       this.element = document.getElementById(id);
+//     }
+  
+//     setActive(active: boolean) {
+//         active ? 
+//             this.element.classList.add('active') :
+//             this.element.classList.remove('active')
+//     }
 // }
 
-const HTMLElementWrapper = function (this: HTMLElementWrapper, element: HTMLElement) {
-    this.element = element
 
-    // return this.element
-}
+// adds the setActive method to HTMLELement's prototype
+Object.defineProperty(HTMLElement.prototype, 'setActive', {
+    enumerable: false,
+    writable: false,
+    value: function(active: HTMLElement): void {
+        active ? 
+            this.classList.add('active') :
+            this.classList.remove('active')
+    }
+})
 
-HTMLElementWrapper.prototype.setActive = function(active: boolean) {
-    active ? this.classList.add('active') : this.classList.remove('active')
-}
-
-// TOGGLE ACTIVE SESSION
-const tree: HTMLElement | null = document.getElementById("session-init-button")
-const sessionInitButton: HTMLElement = new HTMLElementWrapper(tree)
-
+const sessionInitButton: HTMLElement | null = document.getElementById("session-init-button")
 
 const setSessionActive = (active: boolean): void => {
     chrome.storage.local.set({isActiveSession_local: active})
@@ -98,7 +68,7 @@ const activeSessionToggle = async (): Promise<void> => {
 }
 
 // run at start to set up button
-const setupSessionInitButton = ( async function() {
+( async function() {
     try {
         if (sessionInitButton) {
             sessionInitButton.addEventListener("click", () => activeSessionToggle())
