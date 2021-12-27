@@ -2,40 +2,38 @@ interface StorageResponse {
     readonly [isActiveSession_local: string]: boolean
 }
 
+// fix this (delete)
 interface HTMLElement{
+    element: HTMLElement
     setActive: (value: boolean) => void
 }
 
-// it works!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-// sessionInitButton.element.addEventListener... (need to add .element)
-// class SpecialButton {
-//     element;
+class DOMWrapper {
+    element
   
-//     constructor(id) {
-//         // super()
-//       this.element = document.getElementById(id);
-//     }
+    constructor(id: string) {
+        this.element = document.getElementById(id)
+    }
   
-//     setActive(active: boolean) {
-//         active ? 
-//             this.element.classList.add('active') :
-//             this.element.classList.remove('active')
-//     }
-// }
+    setActive(active: boolean) {
+        active ? 
+            this.element.classList.add('active') :
+            this.element.classList.remove('active')
 
+    }
+}
 
 // adds the setActive method to HTMLELement's prototype
-Object.defineProperty(HTMLElement.prototype, 'setActive', {
-    enumerable: false,
-    writable: false,
-    value: function(active: HTMLElement): void {
-        active ? 
-            this.classList.add('active') :
-            this.classList.remove('active')
-    }
-})
+// Object.defineProperty(HTMLElement.prototype, 'setActive', {
+//     value: function(active: HTMLElement): void {
+//         active ? 
+//             this.classList.add('active') :
+//             this.classList.remove('active')
+//     }
+// })
 
-const sessionInitButton: HTMLElement | null = document.getElementById("session-init-button")
+const sessionInitButton: DOMWrapper | null = new DOMWrapper("session-init-button")
+console.log(sessionInitButton)
 
 const setSessionActive = (active: boolean): void => {
     chrome.storage.local.set({isActiveSession_local: active})
@@ -55,10 +53,10 @@ const activeSessionToggle = async (): Promise<void> => {
     const res: boolean = await getSessionActive()
     
     try {
-        if (sessionInitButton) {
+        if (sessionInitButton.element) {
             setSessionActive(!res)
             sessionInitButton.setActive(!res)
-            sessionInitButton.innerHTML = `${await getSessionActive()}`
+            sessionInitButton.element.innerHTML = `${await getSessionActive()}`
         } else {
             throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`)
         }
@@ -70,10 +68,10 @@ const activeSessionToggle = async (): Promise<void> => {
 // run at start to set up button
 ( async function() {
     try {
-        if (sessionInitButton) {
-            sessionInitButton.addEventListener("click", () => activeSessionToggle())
+        if (sessionInitButton.element) {
+            sessionInitButton.element.addEventListener("click", () => activeSessionToggle())
             setSessionActive(false)
-            sessionInitButton.innerHTML = `${await getSessionActive()}`
+            sessionInitButton.element.innerHTML = `${await getSessionActive()}`
         } else {
             throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`)
         }

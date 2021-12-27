@@ -8,31 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// it works!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-// sessionInitButton.element.addEventListener... (need to add .element)
-// class SpecialButton {
-//     element;
-//     constructor(id) {
-//         // super()
-//       this.element = document.getElementById(id);
-//     }
-//     setActive(active: boolean) {
-//         active ? 
-//             this.element.classList.add('active') :
-//             this.element.classList.remove('active')
-//     }
-// }
-// adds the setActive method to HTMLELement's prototype
-Object.defineProperty(HTMLElement.prototype, 'setActive', {
-    enumerable: false,
-    writable: false,
-    value: function (active) {
-        active ?
-            this.classList.add('active') :
-            this.classList.remove('active');
+class DOMWrapper {
+    constructor(id) {
+        this.element = document.getElementById(id);
     }
-});
-const sessionInitButton = document.getElementById("session-init-button");
+    setActive(active) {
+        active ?
+            this.element.classList.add('active') :
+            this.element.classList.remove('active');
+    }
+}
+// adds the setActive method to HTMLELement's prototype
+// Object.defineProperty(HTMLElement.prototype, 'setActive', {
+//     value: function(active: HTMLElement): void {
+//         active ? 
+//             this.classList.add('active') :
+//             this.classList.remove('active')
+//     }
+// })
+const sessionInitButton = new DOMWrapper("session-init-button");
+console.log(sessionInitButton);
 const setSessionActive = (active) => {
     chrome.storage.local.set({ isActiveSession_local: active });
 };
@@ -47,10 +42,10 @@ const getSessionActive = () => {
 const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* () {
     const res = yield getSessionActive();
     try {
-        if (sessionInitButton) {
+        if (sessionInitButton.element) {
             setSessionActive(!res);
             sessionInitButton.setActive(!res);
-            sessionInitButton.innerHTML = `${yield getSessionActive()}`;
+            sessionInitButton.element.innerHTML = `${yield getSessionActive()}`;
         }
         else {
             throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`);
@@ -64,10 +59,10 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (sessionInitButton) {
-                sessionInitButton.addEventListener("click", () => activeSessionToggle());
+            if (sessionInitButton.element) {
+                sessionInitButton.element.addEventListener("click", () => activeSessionToggle());
                 setSessionActive(false);
-                sessionInitButton.innerHTML = `${yield getSessionActive()}`;
+                sessionInitButton.element.innerHTML = `${yield getSessionActive()}`;
             }
             else {
                 throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`);
