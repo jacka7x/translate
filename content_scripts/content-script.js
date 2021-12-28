@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // dynamic import word-selection.js
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const src = chrome.runtime.getURL('/content_scripts/word-selection.js');
-    const contentScript = yield import(src);
+    const wordSelectionJS = chrome.runtime.getURL('/content_scripts/word-selection.js');
+    const contentScript = yield import(wordSelectionJS);
     wordSelect = contentScript.wordSelectionImport;
     if (!wordSelect) {
-        throw new Error(`wordSelect type: ${typeof wordSelect}`);
+        throw new Error(`wordSelect not found. Possible import failure`);
     }
 }))();
 let wordSelect = undefined;
@@ -34,4 +35,4 @@ document.addEventListener("click", (event) => {
         console.error(error);
     }
 });
-export {};
+// export {}

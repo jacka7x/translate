@@ -2,35 +2,50 @@ interface StorageResponse {
     readonly [isActiveSession_local: string]: boolean
 }
 
-// fix this (delete)
-interface HTMLElement{
-    element: HTMLElement
-    setActive: (value: boolean) => void
-}
-
 class DOMWrapper {
-    element
+    // null check in constructor
+    element!: HTMLElement
   
     constructor(id: string) {
-        this.element = document.getElementById(id)
+        try{
+            if (document.getElementById(id) !== null) {
+                this.element = document.getElementById(id) as HTMLElement
+            } else {
+                throw new Error(`Element with ID "${id}" does not exist. Failed to set element in DOMWrapper`)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+        
+    }
+
+    get() {
+        return this.element
     }
   
     setActive(active: boolean) {
         active ? 
-            // how to deal with this null check?
             this.element.classList.add('active') :
             this.element.classList.remove('active')
-
     }
 
-    setInnerHtml(html: string) {
-        // how to deal with this null check?
+    innerHTML(html: string) {
         this.element.innerHTML = html
+    }
 
+    addEventListener(event: keyof HTMLElementEventMap, callback: Function) {
+        this.element.addEventListener(event, () => callback)
     }
 }
 
 // adds the setActive method to HTMLELement's prototype
+// could use insead of class wrapper
+
+// interface HTMLElement{
+//     element: HTMLElement
+//     setActive: (value: boolean) => void
+// }
+
 // Object.defineProperty(HTMLElement.prototype, 'setActive', {
 //     value: function(active: HTMLElement): void {
 //         active ? 
@@ -39,8 +54,7 @@ class DOMWrapper {
 //     }
 // })
 
-const sessionInitButton: DOMWrapper | null = new DOMWrapper("session-init-button")
-console.log(sessionInitButton)
+const sessionInitButton: DOMWrapper = new DOMWrapper("session-init-button")
 
 const setSessionActive = (active: boolean): void => {
     chrome.storage.local.set({isActiveSession_local: active})
@@ -49,26 +63,26 @@ const setSessionActive = (active: boolean): void => {
 const getSessionActive = (): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(
-            ['isActiveSession_local'], (res: StorageResponse ) => {
-                res['isActiveSession_local'] === undefined ?
-                reject() : resolve(res['isActiveSession_local'])
+            ['isActiveSession_local'], (response: StorageResponse ) => {
+                response['isActiveSession_local'] === undefined ?
+                reject() : resolve(response['isActiveSession_local'])
         })
     })
 }
 
 const activeSessionToggle = async (): Promise<void> => {
-    const res: boolean = await getSessionActive()
+    const response: boolean = await getSessionActive()
     
     try {
-        if (sessionInitButton.element) {
-            setSessionActive(!res)
-            sessionInitButton.setActive(!res)
-            sessionInitButton.element.innerHTML = `${await getSessionActive()}`
+        if (sessionInitButton.get()) {
+            setSessionActive(!response)
+            sessionInitButton.setActive(!response)
+            sessionInitButton.innerHTML(`${await getSessionActive()}`)
         } else {
-            throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`)
+            throw new Error(`sessionInitButton not found`)
         }
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 }
 
@@ -76,9 +90,9 @@ const activeSessionToggle = async (): Promise<void> => {
 ( async function() {
     try {
         if (sessionInitButton.element) {
-            sessionInitButton.element.addEventListener("click", () => activeSessionToggle())
             setSessionActive(false)
-            sessionInitButton.element.innerHTML = `${await getSessionActive()}`
+            sessionInitButton.innerHTML(`${await getSessionActive()}`)
+            sessionInitButton.addEventListener("click", activeSessionToggle)
         } else {
             throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`)
         }

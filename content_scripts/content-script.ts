@@ -4,12 +4,12 @@ interface MouseCoordinates {
 
 // dynamic import word-selection.js
 (async () => {
-    const src = chrome.runtime.getURL('/content_scripts/word-selection.js')
-    const contentScript = await import(src)
+    const wordSelectionJS: string = chrome.runtime.getURL('/content_scripts/word-selection.js')
+    const contentScript = await import(wordSelectionJS)
     wordSelect = contentScript.wordSelectionImport
 
     if(!wordSelect){
-        throw new Error (`wordSelect type: ${typeof wordSelect}`)
+        throw new Error (`wordSelect not found. Possible import failure`)
     }
 })()
 
@@ -36,4 +36,4 @@ document.addEventListener("click", (event) => {
     }
 })
 
-export {}
+// export {}
