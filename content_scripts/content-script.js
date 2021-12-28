@@ -17,22 +17,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         throw new Error(`wordSelect not found. Possible import failure`);
     }
 }))();
+// remove any
 let wordSelect = undefined;
-const getCurrentMousePosition = (event) => {
-    return [event.clientX, event.clientY];
-};
 document.addEventListener("click", (event) => {
     console.assert(wordSelect, `wordSelect type: ${typeof wordSelect}`);
     try {
         if (!wordSelect) {
-            throw new Error(`wordSelect type: ${typeof wordSelect}`);
+            throw new Error(`wordSelect not found.`);
         }
         else {
-            wordSelect(getCurrentMousePosition(event));
+            // remove any
+            const selectedWordDetails = wordSelect(event);
+            // change to object and use destructuting/
+            const selectedWord = selectedWordDetails[0];
+            const selectedStart = selectedWordDetails[1];
+            const selectedEnd = selectedWordDetails[2];
+            const selectedArea = selectedWordDetails[3];
+            console.log(`Selected word: ${selectedWord}`);
+            console.log(selectedArea);
+            console.log(selectedStart);
+            console.log(selectedEnd);
         }
     }
     catch (error) {
         console.error(error);
     }
 });
-// export {}
