@@ -1,93 +1,107 @@
 const wordSelectionImport = (() => {
     interface MouseCoordinates {
-        cursor_x: number
-        cursor_y: number
+        x: number
+        y: number
     }
 
-    const getCurrentMousePosition: (event: MouseEvent) => MouseCoordinates = 
-    (event) => {
-        return { cursor_x: event.clientX, cursor_y: event.clientY }
+    interface WordSelection {
+        word: string
+        wordStartIndex: number
+        wordEndIndex: number
+        clickedElement: HTMLElement
+        nodes: NodeList 
+        nodeIndex: number
+    }
+
+    function getCurrentMousePosition(event: MouseEvent): MouseCoordinates {
+        return { x: event.clientX, y: event.clientY }
+    }
+
+    function isClickInRects
+        (rects: DOMRectList, cursorPosition: MouseCoordinates): DOMRect | false {
+
+        for (let i = 0; i < rects.length; i++) {
+
+            let rect = rects[i]
+            if (!rect) continue
+
+            if (rect.left < cursorPosition.x && rect.right > cursorPosition.x && 
+                rect.top < cursorPosition.y && rect.bottom > cursorPosition.y ) 
+            {     
+                return rect;
+            }
+        }
+        return false;
+    }
+
+    function checkForClickedWord
+        (cursorPosition: MouseCoordinates, event: MouseEvent): WordSelection | null {
+
+        // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
+        
+        const clickedElement: HTMLElement | null = <HTMLElement>event.target
+        const nodes: NodeList = clickedElement.childNodes;
+
+        // check nodelist
+        for(let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
+
+            const node: Node | undefined = nodes[nodeIndex]
+            if(!node || !node.textContent) continue
+
+            console.log(node.textContent)
+
+            // set up a range
+            let wordRange: Range = document.createRange();
+            let wordList: string[] = node.textContent.split(' ')
+            let wordStartIndex: number = 0;
+            let wordEndIndex: number = 0;
+            // check string of words from textnode
+            for (let i = 0; i < wordList.length; ++i) {
+                let word = wordList[i];
+                if(!word) {
+                    wordStartIndex++
+                    continue
+                }
+                wordEndIndex = wordStartIndex + word.length;
+                try { // something bad going on here 
+                    wordRange.setStart(node, wordStartIndex);
+                    wordRange.setEnd(node, wordEndIndex);
+                } catch (error)
+                { 
+                    // this is hiding lots of errors
+                    // remove try/catch and do falsey check maybe?
+                    // console.error(error) 
+                    continue
+                }
+
+                // get range dimesions/coordinates
+                let rects: DOMRectList = wordRange.getClientRects();
+                let clickedRect: DOMRect | false = isClickInRects(rects, cursorPosition)
+                if (clickedRect) {   
+                    return { 
+                        word, wordStartIndex, wordEndIndex, clickedElement, nodes, nodeIndex 
+                    }
+                } else {
+                    wordStartIndex = wordEndIndex + 1;
+                }           
+            }
+        }
+
+        // no word/node in selected element clicked
+        return null
     }
     
-    function wordSelect(event: MouseEvent) {
-        // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
+    function selectWordAtCursor(event: MouseEvent) {
 
-        // change to object cursor.x cursor.y etc
-        const { cursor_x, cursor_y }: MouseCoordinates = getCurrentMousePosition(event)
-
-        // why childnodes[0], what about other nodes?
-        // childnode is just the text node? What about other elements?
-        const parentElt = event.target.childNodes
-        console.log(cursor_x, cursor_y)
-        console.log(event.target)
-        console.log(event.target.childNodes)
-        // console.log(event.target.childNodes[0])
-        // console.log(event.target.childNodes[0].textContent)
-
-        // if (parentElt.nodeName !== '#text') {
-        //     console.log('didn\'t click on text node');
-        //     return null;
-        // }
-
-        
-
-        
-
-        for(let n = 0; n < parentElt.length; n++) {
-
-        let range = document.createRange();
-        // textContent gets all child nodes and removes any HTML markup?
-        let words = parentElt[n].textContent.split(' ');
-        let start = 0;
-        let end = 0;
-        
-        for (let i = 0; i < words.length; i++) {
-            let word = words[i];
-  
-            end = start+word.length;
-            range.setStart(parentElt[n], start);
-
-            try { // something bad going on here 
-                range.setEnd(parentElt[n], end);
-            } catch (error)
-            {
-                console.error(error)
-            }
-
-            // not getBoundingClientRect as word could wrap
-            let rects = range.getClientRects();
-
-            let clickedRect = isClickInRects(rects);
-            if (clickedRect) {
-                const span = document.createElement('span')
-                span.textContent = "test"
-                span.classList.add('selected')
-                const newText = parentElt[n].textContent.split(' ')
-                newText[i] = span
-                parentElt[n].textContent = newText
-
-
-                return [word, start, end, clickedRect];
-            }
-            start = end + 1;
-        }
-
-        } // for loop
-        
-        function isClickInRects(rects) {
-            for (var i = 0; i < rects.length; ++i) {
-                var r = rects[i]
-                if (r.left<cursor_x && r.right>cursor_x &&
-                     r.top<cursor_y && r.bottom>cursor_y) {     
-                    return r;
-                }
-            }
-            return false;
-        }
+        const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
+        const selectedWord: WordSelection | null = checkForClickedWord(cursorPosition, event)
+        if(selectedWord) return selectedWord
+           
+        console.log('didn\'t click on text node')
         return null;
     }
     
-    return wordSelect
+    return selectWordAtCursor
 })()
 
 export { wordSelectionImport }
