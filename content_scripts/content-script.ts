@@ -7,7 +7,7 @@
     if(!selectWordAtCursor){
         throw new Error (`wordSelect not found. Possible import failure`)
     } else {
-        document.addEventListener("click", (event) => processClickEvent(event))
+        document.addEventListener('click', (event) => processClickEvent(event))
     }
 })()
 
@@ -23,6 +23,8 @@ interface WordSelection {
 let selectWordAtCursor: ((event: MouseEvent) => WordSelection) | any = undefined
 
 function processClickEvent(event: MouseEvent) {
+    event.preventDefault()
+
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement: HTMLElement | null = <HTMLElement>event.target
 
@@ -65,7 +67,7 @@ function hilightWord(event: MouseEvent, clickedElement: HTMLElement): null | voi
 }
 
 function removeHilightFromWord(clickedElement: HTMLSpanElement) {
-]
+
     const textNode: Text = document.createTextNode(clickedElement.innerText)
     const clickedElementParent: ParentNode | null = clickedElement.parentNode
 

@@ -35,8 +35,6 @@ const wordSelectionImport = (() => {
 
     function checkForClickedWord
         (cursorPosition: MouseCoordinates, clickedElement: HTMLElement): WordSelection | null {
-
-        // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
         
         const nodes: NodeList = clickedElement.childNodes;
 
@@ -51,8 +49,8 @@ const wordSelectionImport = (() => {
             let wordList: string[] = node.textContent.split(' ')
             let wordStartIndex: number = 0;
             let wordEndIndex: number = 0;
-            // check string of words from textnode
 
+            // check string of words from textnode
             for (let i = 0; i < wordList.length; ++i) {
 
                 let word = wordList[i];

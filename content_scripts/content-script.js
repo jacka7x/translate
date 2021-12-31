@@ -17,12 +17,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         throw new Error(`wordSelect not found. Possible import failure`);
     }
     else {
-        document.addEventListener("click", (event) => processClickEvent(event));
+        document.addEventListener('click', (event) => processClickEvent(event));
     }
 }))();
 // remove any--------------------->
 let selectWordAtCursor = undefined;
 function processClickEvent(event) {
+    event.preventDefault();
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement = event.target;
     if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {

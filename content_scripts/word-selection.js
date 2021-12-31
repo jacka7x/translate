@@ -15,7 +15,6 @@ const wordSelectionImport = (() => {
         return false;
     }
     function checkForClickedWord(cursorPosition, clickedElement) {
-        // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
         const nodes = clickedElement.childNodes;
         // check nodelist
         for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
