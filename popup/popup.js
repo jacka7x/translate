@@ -33,23 +33,12 @@ class DOMWrapper {
     innerHTML(html) {
         this.element.innerHTML = html;
     }
-    addEventListener(event, callback) {
+    aaddEventListener(event, callback) {
+        console.log('hello');
         this.element.addEventListener(event, () => callback);
+        console.log(this.element.attributes);
     }
 }
-// adds the setActive method to HTMLELement's prototype
-// could use insead of class wrapper
-// interface HTMLElement{
-//     element: HTMLElement
-//     setActive: (value: boolean) => void
-// }
-// Object.defineProperty(HTMLElement.prototype, 'setActive', {
-//     value: function(active: HTMLElement): void {
-//         active ? 
-//             this.classList.add('active') :
-//             this.classList.remove('active')
-//     }
-// })
 const sessionInitButton = new DOMWrapper("session-init-button");
 const setSessionActive = (active) => {
     chrome.storage.local.set({ isActiveSession_local: active });
@@ -63,6 +52,7 @@ const getSessionActive = () => {
     });
 };
 const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('clicked');
     const response = yield getSessionActive();
     try {
         if (sessionInitButton.get()) {
@@ -84,9 +74,11 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (sessionInitButton.element) {
+                console.log(sessionInitButton);
                 setSessionActive(false);
-                sessionInitButton.innerHTML(`${yield getSessionActive()}`);
-                sessionInitButton.addEventListener("click", activeSessionToggle);
+                // remove innerHTML
+                sessionInitButton.innerHTML(`${yield getSessionActive()}!`);
+                sessionInitButton.aaddEventListener('click', activeSessionToggle);
             }
             else {
                 throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`);
