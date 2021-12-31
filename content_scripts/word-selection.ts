@@ -89,7 +89,7 @@ const wordSelectionImport = (() => {
         if(selectedWord) return selectedWord
            
         console.log('didn\'t click on text node')
-        return null;
+        return null
     }
     
     return selectWordAtCursor

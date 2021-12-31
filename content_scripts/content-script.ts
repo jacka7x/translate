@@ -11,6 +11,15 @@
     }
 })()
 
+let activeSession: boolean = false;
+
+const updateActiveSessionStatus = (changes): void => {
+    // TS type problem
+    activeSession = changes['isActiveSession_local']['newValue']
+}
+
+chrome.storage.onChanged.addListener(updateActiveSessionStatus)
+
 interface WordSelection {
     word: string
     wordStartIndex: number
@@ -22,8 +31,10 @@ interface WordSelection {
 // remove any--------------------->
 let selectWordAtCursor: ((event: MouseEvent) => WordSelection) | any = undefined
 
-function processClickEvent(event: MouseEvent) {
-    // event.preventDefault()
+function processClickEvent(event: MouseEvent): void {
+
+    if(!activeSession) return
+    event.preventDefault()
 
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement: HTMLElement | null = <HTMLElement>event.target
@@ -35,10 +46,10 @@ function processClickEvent(event: MouseEvent) {
     }
 }
 
-function hilightWord(event: MouseEvent, clickedElement: HTMLElement): null | void {
+function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
 
     const wordAtCursor: WordSelection = selectWordAtCursor(event, clickedElement)
-    if (!wordAtCursor) return null
+    if (!wordAtCursor) return
 
     const {
         word: selectedWord,

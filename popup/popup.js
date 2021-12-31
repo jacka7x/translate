@@ -8,38 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class DOMWrapper {
-    constructor(id) {
-        try {
-            if (document.getElementById(id) !== null) {
-                this.element = document.getElementById(id);
-            }
-            else {
-                throw new Error(`Element with ID "${id}" does not exist. Failed to set element in DOMWrapper`);
-            }
-        }
-        catch (error) {
-            console.error(error);
-        }
-    }
-    get() {
-        return this.element;
-    }
-    setActive(active) {
-        active ?
-            this.element.classList.add('active') :
-            this.element.classList.remove('active');
-    }
-    innerHTML(html) {
-        this.element.innerHTML = html;
-    }
-    aaddEventListener(event, callback) {
-        console.log('hello');
-        this.element.addEventListener(event, () => callback);
-        console.log(this.element.attributes);
-    }
-}
-const sessionInitButton = new DOMWrapper("session-init-button");
+// possible issue with DOM extension | also possible to do with web components
+HTMLElement.prototype.setActive_HTMLElement = function (active) {
+    active ?
+        this.classList.add('active') :
+        this.classList.remove('active');
+};
+const sessionInitButton = document.getElementById("session-init-button");
 const setSessionActive = (active) => {
     chrome.storage.local.set({ isActiveSession_local: active });
 };
@@ -55,10 +30,10 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
     console.log('clicked');
     const response = yield getSessionActive();
     try {
-        if (sessionInitButton.get()) {
+        if (sessionInitButton) {
             setSessionActive(!response);
-            sessionInitButton.setActive(!response);
-            sessionInitButton.innerHTML(`${yield getSessionActive()}`);
+            sessionInitButton.setActive_HTMLElement(!response);
+            sessionInitButton.innerText = `${yield getSessionActive()}`;
             console.log(response);
         }
         else {
@@ -73,12 +48,12 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
 (function () {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (sessionInitButton.element) {
+            if (sessionInitButton) {
                 console.log(sessionInitButton);
                 setSessionActive(false);
                 // remove innerHTML
-                sessionInitButton.innerHTML(`${yield getSessionActive()}!`);
-                sessionInitButton.aaddEventListener('click', activeSessionToggle);
+                sessionInitButton.innerText = `${yield getSessionActive()}!`;
+                sessionInitButton.addEventListener('click', activeSessionToggle);
             }
             else {
                 throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`);

@@ -20,10 +20,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         document.addEventListener('click', (event) => processClickEvent(event));
     }
 }))();
+let activeSession = false;
+const updateActiveSessionStatus = (changes) => {
+    // TS type problem
+    activeSession = changes['isActiveSession_local']['newValue'];
+};
+chrome.storage.onChanged.addListener(updateActiveSessionStatus);
 // remove any--------------------->
 let selectWordAtCursor = undefined;
 function processClickEvent(event) {
-    // event.preventDefault()
+    if (!activeSession)
+        return;
+    event.preventDefault();
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement = event.target;
     if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
@@ -36,7 +44,7 @@ function processClickEvent(event) {
 function hilightWord(event, clickedElement) {
     const wordAtCursor = selectWordAtCursor(event, clickedElement);
     if (!wordAtCursor)
-        return null;
+        return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
     console.log(`Selected word: ${selectedWord}`);
     const span = createSpanElement(selectedWord);
