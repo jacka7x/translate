@@ -23,7 +23,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 // remove any--------------------->
 let selectWordAtCursor = undefined;
 function processClickEvent(event) {
-    event.preventDefault();
+    // event.preventDefault()
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement = event.target;
     if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {

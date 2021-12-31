@@ -78,6 +78,7 @@ const activeSessionToggle = async (): Promise<void> => {
             setSessionActive(!response)
             sessionInitButton.setActive(!response)
             sessionInitButton.innerHTML(`${await getSessionActive()}`)
+            console.log(response)
         } else {
             throw new Error(`sessionInitButton not found`)
         }

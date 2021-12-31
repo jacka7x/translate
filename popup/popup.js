@@ -69,6 +69,7 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
             setSessionActive(!response);
             sessionInitButton.setActive(!response);
             sessionInitButton.innerHTML(`${yield getSessionActive()}`);
+            console.log(response);
         }
         else {
             throw new Error(`sessionInitButton not found`);

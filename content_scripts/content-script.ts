@@ -23,7 +23,7 @@ interface WordSelection {
 let selectWordAtCursor: ((event: MouseEvent) => WordSelection) | any = undefined
 
 function processClickEvent(event: MouseEvent) {
-    event.preventDefault()
+    // event.preventDefault()
 
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement: HTMLElement | null = <HTMLElement>event.target
