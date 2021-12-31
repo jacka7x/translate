@@ -7,7 +7,7 @@
     if(!selectWordAtCursor){
         throw new Error (`wordSelect not found. Possible import failure`)
     } else {
-        document.addEventListener("click", (event) => hilightWord(event) )
+        document.addEventListener("click", (event) => processClickEvent(event))
     }
 })()
 
@@ -15,7 +15,6 @@ interface WordSelection {
     word: string
     wordStartIndex: number
     wordEndIndex: number
-    clickedElement: HTMLElement
     nodes: NodeList 
     nodeIndex: number
 }
@@ -23,38 +22,64 @@ interface WordSelection {
 // remove any--------------------->
 let selectWordAtCursor: ((event: MouseEvent) => WordSelection) | any = undefined
 
-function hilightWord(event: MouseEvent): null | void {
+function processClickEvent(event: MouseEvent) {
+    // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
+    const clickedElement: HTMLElement | null = <HTMLElement>event.target
 
-    const wordAtCursor: WordSelection = selectWordAtCursor(event)
+    if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
+        removeHilightFromWord(clickedElement)
+    } else {
+        hilightWord(event, clickedElement)
+    }
+}
+
+function hilightWord(event: MouseEvent, clickedElement: HTMLElement): null | void {
+
+    const wordAtCursor: WordSelection = selectWordAtCursor(event, clickedElement)
     if (!wordAtCursor) return null
 
-    const selectedWord: string = wordAtCursor.word
-    const selectedStart: number = wordAtCursor.wordStartIndex
-    const selectedEnd: number = wordAtCursor.wordEndIndex
-    const clickedElement: HTMLElement = wordAtCursor.clickedElement
-    const nodes: NodeList = wordAtCursor.nodes
-    const nodeIndex: number = wordAtCursor.nodeIndex
+    const {
+        word: selectedWord,
+        wordStartIndex: selectedStart,
+        wordEndIndex: selectedEnd,
+        nodes,
+        nodeIndex
+    } = wordAtCursor
     
     console.log(`Selected word: ${selectedWord}`)
 
-    // create span element
-    const mySpan: HTMLSpanElement = document.createElement("span")
-    mySpan.classList.add('selected')
-    mySpan.innerText = selectedWord
-    mySpan.style.color = "red"
-    mySpan.style.backgroundColor = "yellow";
+    const span: HTMLSpanElement = createSpanElement(selectedWord);
 
-    // split text node before and after selected word and delete middle node
+    // split text node before and after selected word
     (nodes[nodeIndex] as Text).splitText(selectedStart).splitText(selectedEnd-selectedStart)
 
     const nextNode: Node | undefined = nodes[nodeIndex + 1]
     const nextNode_2: Node | undefined = nodes[nodeIndex + 2]
     if (!nextNode || !nextNode_2) throw new Error('Missing node.')
 
-    const nextNodeParent: ParentNode | null = nextNode.parentNode
-    if (!nextNodeParent) throw new Error('Missing parent of node.')
-    nextNodeParent.removeChild(nextNode)
+    // remove middle split node
+    clickedElement.removeChild(nextNode)
 
-    // append at position
-    clickedElement.insertBefore(mySpan, nextNode_2)
+    // append between remaining split nodes
+    clickedElement.insertBefore(span, nextNode_2)
+}
+
+function removeHilightFromWord(clickedElement: HTMLSpanElement) {
+]
+    const textNode: Text = document.createTextNode(clickedElement.innerText)
+    const clickedElementParent: ParentNode | null = clickedElement.parentNode
+
+    // replace span with textNode and normalize
+    clickedElementParent?.insertBefore(textNode, clickedElement)
+    clickedElement.remove()
+    clickedElementParent?.normalize()
+}
+
+function createSpanElement(selectedWord: string): HTMLSpanElement {
+    const span = document.createElement("span")
+    span.classList.add('selected')
+    span.innerText = selectedWord
+    span.style.color = "red"
+    span.style.backgroundColor = "yellow";
+    return span;
 }

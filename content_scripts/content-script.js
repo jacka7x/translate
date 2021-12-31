@@ -17,38 +17,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         throw new Error(`wordSelect not found. Possible import failure`);
     }
     else {
-        document.addEventListener("click", (event) => hilightWord(event));
+        document.addEventListener("click", (event) => processClickEvent(event));
     }
 }))();
 // remove any--------------------->
 let selectWordAtCursor = undefined;
-function hilightWord(event) {
-    const wordAtCursor = selectWordAtCursor(event);
+function processClickEvent(event) {
+    // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
+    const clickedElement = event.target;
+    if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
+        removeHilightFromWord(clickedElement);
+    }
+    else {
+        hilightWord(event, clickedElement);
+    }
+}
+function hilightWord(event, clickedElement) {
+    const wordAtCursor = selectWordAtCursor(event, clickedElement);
     if (!wordAtCursor)
         return null;
-    const selectedWord = wordAtCursor.word;
-    const selectedStart = wordAtCursor.wordStartIndex;
-    const selectedEnd = wordAtCursor.wordEndIndex;
-    const clickedElement = wordAtCursor.clickedElement;
-    const nodes = wordAtCursor.nodes;
-    const nodeIndex = wordAtCursor.nodeIndex;
+    const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
     console.log(`Selected word: ${selectedWord}`);
-    // create span element
-    const mySpan = document.createElement("span");
-    mySpan.classList.add('selected');
-    mySpan.innerText = selectedWord;
-    mySpan.style.color = "red";
-    mySpan.style.backgroundColor = "yellow";
-    // split text node before and after selected word and delete middle node
+    const span = createSpanElement(selectedWord);
+    // split text node before and after selected word
     nodes[nodeIndex].splitText(selectedStart).splitText(selectedEnd - selectedStart);
     const nextNode = nodes[nodeIndex + 1];
     const nextNode_2 = nodes[nodeIndex + 2];
     if (!nextNode || !nextNode_2)
         throw new Error('Missing node.');
-    const nextNodeParent = nextNode.parentNode;
-    if (!nextNodeParent)
-        throw new Error('Missing parent of node.');
-    nextNodeParent.removeChild(nextNode);
-    // append at position
-    clickedElement.insertBefore(mySpan, nextNode_2);
+    // remove middle split node
+    clickedElement.removeChild(nextNode);
+    // append between remaining split nodes
+    clickedElement.insertBefore(span, nextNode_2);
+}
+function removeHilightFromWord(clickedElement) {
+    const textNode = document.createTextNode(clickedElement.innerText);
+    const clickedElementParent = clickedElement.parentNode;
+    // replace span with textNode and normalize
+    clickedElementParent === null || clickedElementParent === void 0 ? void 0 : clickedElementParent.insertBefore(textNode, clickedElement);
+    clickedElement.remove();
+    clickedElementParent === null || clickedElementParent === void 0 ? void 0 : clickedElementParent.normalize();
+}
+function createSpanElement(selectedWord) {
+    const span = document.createElement("span");
+    span.classList.add('selected');
+    span.innerText = selectedWord;
+    span.style.color = "red";
+    span.style.backgroundColor = "yellow";
+    return span;
 }

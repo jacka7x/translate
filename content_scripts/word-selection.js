@@ -14,11 +14,9 @@ const wordSelectionImport = (() => {
         }
         return false;
     }
-    function checkForClickedWord(cursorPosition, event) {
+    function checkForClickedWord(cursorPosition, clickedElement) {
         // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
-        const clickedElement = event.target;
         const nodes = clickedElement.childNodes;
-        console.log(clickedElement);
         // check nodelist
         for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
             const node = nodes[nodeIndex];
@@ -44,7 +42,7 @@ const wordSelectionImport = (() => {
                 let clickedRect = isClickInRects(rects, cursorPosition);
                 if (clickedRect) {
                     return {
-                        word, wordStartIndex, wordEndIndex, clickedElement, nodes, nodeIndex
+                        word, wordStartIndex, wordEndIndex, nodes, nodeIndex
                     };
                 }
                 else {
@@ -55,9 +53,9 @@ const wordSelectionImport = (() => {
         // no word/node in selected element clicked
         return null;
     }
-    function selectWordAtCursor(event) {
+    function selectWordAtCursor(event, clickedElement) {
         const cursorPosition = getCurrentMousePosition(event);
-        const selectedWord = checkForClickedWord(cursorPosition, event);
+        const selectedWord = checkForClickedWord(cursorPosition, clickedElement);
         if (selectedWord)
             return selectedWord;
         console.log('didn\'t click on text node');
