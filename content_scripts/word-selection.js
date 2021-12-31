@@ -18,12 +18,12 @@ const wordSelectionImport = (() => {
         // Solution from: https://stackoverflow.com/questions/4311715/how-to-get-position-of-every-character/4359182 | https://jsfiddle.net/abrady0/ggr5mu7o/
         const clickedElement = event.target;
         const nodes = clickedElement.childNodes;
+        console.log(clickedElement);
         // check nodelist
         for (let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
             const node = nodes[nodeIndex];
-            if (!node || !node.textContent)
+            if (!node || !node.textContent || node.nodeType !== 3)
                 continue;
-            console.log(node.textContent);
             // set up a range
             let wordRange = document.createRange();
             let wordList = node.textContent.split(' ');
@@ -37,16 +37,8 @@ const wordSelectionImport = (() => {
                     continue;
                 }
                 wordEndIndex = wordStartIndex + word.length;
-                try { // something bad going on here 
-                    wordRange.setStart(node, wordStartIndex);
-                    wordRange.setEnd(node, wordEndIndex);
-                }
-                catch (error) {
-                    // this is hiding lots of errors
-                    // remove try/catch and do falsey check maybe?
-                    // console.error(error) 
-                    continue;
-                }
+                wordRange.setStart(node, wordStartIndex);
+                wordRange.setEnd(node, wordEndIndex);
                 // get range dimesions/coordinates
                 let rects = wordRange.getClientRects();
                 let clickedRect = isClickInRects(rects, cursorPosition);

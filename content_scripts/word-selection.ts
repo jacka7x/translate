@@ -41,14 +41,13 @@ const wordSelectionImport = (() => {
         
         const clickedElement: HTMLElement | null = <HTMLElement>event.target
         const nodes: NodeList = clickedElement.childNodes;
+        console.log(clickedElement)
 
         // check nodelist
         for(let nodeIndex = 0; nodeIndex < nodes.length; nodeIndex++) {
 
             const node: Node | undefined = nodes[nodeIndex]
-            if(!node || !node.textContent) continue
-
-            console.log(node.textContent)
+            if(!node || !node.textContent || node.nodeType !== 3) continue            
 
             // set up a range
             let wordRange: Range = document.createRange();
@@ -56,27 +55,23 @@ const wordSelectionImport = (() => {
             let wordStartIndex: number = 0;
             let wordEndIndex: number = 0;
             // check string of words from textnode
+
             for (let i = 0; i < wordList.length; ++i) {
+
                 let word = wordList[i];
                 if(!word) {
                     wordStartIndex++
                     continue
                 }
+                
                 wordEndIndex = wordStartIndex + word.length;
-                try { // something bad going on here 
-                    wordRange.setStart(node, wordStartIndex);
-                    wordRange.setEnd(node, wordEndIndex);
-                } catch (error)
-                { 
-                    // this is hiding lots of errors
-                    // remove try/catch and do falsey check maybe?
-                    // console.error(error) 
-                    continue
-                }
+                wordRange.setStart(node, wordStartIndex);
+                wordRange.setEnd(node, wordEndIndex);
 
                 // get range dimesions/coordinates
                 let rects: DOMRectList = wordRange.getClientRects();
                 let clickedRect: DOMRect | false = isClickInRects(rects, cursorPosition)
+
                 if (clickedRect) {   
                     return { 
                         word, wordStartIndex, wordEndIndex, clickedElement, nodes, nodeIndex 
