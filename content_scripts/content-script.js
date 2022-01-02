@@ -20,14 +20,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         document.addEventListener('click', (event) => processClickEvent(event));
     }
 }))();
+let selectWordAtCursor;
 let activeSession = false;
-const updateActiveSessionStatus = (changes) => {
-    // TS type problem
-    activeSession = changes['isActiveSession_local']['newValue'];
-};
 chrome.storage.onChanged.addListener(updateActiveSessionStatus);
-// remove any--------------------->
-let selectWordAtCursor = undefined;
+function updateActiveSessionStatus(changes) {
+    var _a;
+    activeSession = (_a = changes['isActiveSession_local']) === null || _a === void 0 ? void 0 : _a['newValue'];
+}
 function processClickEvent(event) {
     if (!activeSession)
         return;
@@ -42,9 +41,9 @@ function processClickEvent(event) {
     }
 }
 function hilightWord(event, clickedElement) {
+    if (!selectWordAtCursor)
+        throw new Error("selectWordAtCurson not found");
     const wordAtCursor = selectWordAtCursor(event, clickedElement);
-    if (!wordAtCursor)
-        return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
     console.log(`Selected word: ${selectedWord}`);
     const span = createSpanElement(selectedWord);

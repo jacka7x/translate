@@ -1,4 +1,4 @@
-// can't also put this in content-script.ts but no errors?
+
 interface StorageResponse {
     readonly [isActiveSession_local: string]: boolean
 }
@@ -20,18 +20,18 @@ const setSessionActive = (active: boolean): void => {
     chrome.storage.local.set({isActiveSession_local: active})
 }
 
-const getSessionActive = (): Promise<boolean> => {
+const getSessionActive = (): Promise<boolean | undefined> => {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(['isActiveSession_local'], (response: StorageResponse) => {
                 response['isActiveSession_local'] === undefined ?
-                reject() : resolve(response['isActiveSession_local'])
+                reject(undefined) : resolve(response['isActiveSession_local'])
         })
     })
 }
 
 const activeSessionToggle = async (): Promise<void> => {
-    console.log('clicked')
-    const response: boolean = await getSessionActive()
+
+    const response: boolean | undefined = await getSessionActive()
     try {
         if (sessionInitButton) {
             setSessionActive(!response)
@@ -50,16 +50,18 @@ const activeSessionToggle = async (): Promise<void> => {
 ( async function() {
     try {
         if (sessionInitButton) {
-            console.log(sessionInitButton)
-            setSessionActive(false)
-
-            // remove innerHTML
-            sessionInitButton.innerText = `${await getSessionActive()}!`
+            const response: boolean | undefined = await getSessionActive()
+            if (response === undefined) setSessionActive(false)
+            else {
+                sessionInitButton.setActive_HTMLElement(response)
+                sessionInitButton.innerText = `${response}!`
+            }
+            
             sessionInitButton.addEventListener('click', activeSessionToggle)
         } else {
-            throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`)
+            throw new Error(`sessionInitButton is not found`)
         }
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 })()

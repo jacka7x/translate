@@ -22,12 +22,11 @@ const getSessionActive = () => {
     return new Promise((resolve, reject) => {
         chrome.storage.local.get(['isActiveSession_local'], (response) => {
             response['isActiveSession_local'] === undefined ?
-                reject() : resolve(response['isActiveSession_local']);
+                reject(undefined) : resolve(response['isActiveSession_local']);
         });
     });
 };
 const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('clicked');
     const response = yield getSessionActive();
     try {
         if (sessionInitButton) {
@@ -49,18 +48,21 @@ const activeSessionToggle = () => __awaiter(void 0, void 0, void 0, function* ()
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (sessionInitButton) {
-                console.log(sessionInitButton);
-                setSessionActive(false);
-                // remove innerHTML
-                sessionInitButton.innerText = `${yield getSessionActive()}!`;
+                const response = yield getSessionActive();
+                if (response === undefined)
+                    setSessionActive(false);
+                else {
+                    sessionInitButton.setActive_HTMLElement(response);
+                    sessionInitButton.innerText = `${response}!`;
+                }
                 sessionInitButton.addEventListener('click', activeSessionToggle);
             }
             else {
-                throw new Error(`sessionInitButton is type ${typeof sessionInitButton}`);
+                throw new Error(`sessionInitButton is not found`);
             }
         }
         catch (error) {
-            console.log(error);
+            console.error(error);
         }
     });
 })();

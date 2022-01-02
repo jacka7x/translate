@@ -1,3 +1,15 @@
+interface WordSelection {
+    word: string
+    wordStartIndex: number
+    wordEndIndex: number
+    nodes: NodeList 
+    nodeIndex: number
+}
+
+interface chromeOnChange {
+    [key: string]: chrome.storage.StorageChange
+}
+
 // dynamic import word-selection.js
 (async () => {
     const wordSelectionJS: string = chrome.runtime.getURL('/content_scripts/word-selection.js')
@@ -11,25 +23,14 @@
     }
 })()
 
+let selectWordAtCursor: ((event: MouseEvent, clickedElement: HTMLElement) => WordSelection)
+
 let activeSession: boolean = false;
-
-const updateActiveSessionStatus = (changes): void => {
-    // TS type problem
-    activeSession = changes['isActiveSession_local']['newValue']
-}
-
 chrome.storage.onChanged.addListener(updateActiveSessionStatus)
 
-interface WordSelection {
-    word: string
-    wordStartIndex: number
-    wordEndIndex: number
-    nodes: NodeList 
-    nodeIndex: number
+function updateActiveSessionStatus(changes: chromeOnChange) {
+    activeSession = changes['isActiveSession_local']?.['newValue']
 }
-
-// remove any--------------------->
-let selectWordAtCursor: ((event: MouseEvent) => WordSelection) | any = undefined
 
 function processClickEvent(event: MouseEvent): void {
 
@@ -47,9 +48,9 @@ function processClickEvent(event: MouseEvent): void {
 }
 
 function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
-
+    
+    if (!selectWordAtCursor) throw new Error("selectWordAtCurson not found")
     const wordAtCursor: WordSelection = selectWordAtCursor(event, clickedElement)
-    if (!wordAtCursor) return
 
     const {
         word: selectedWord,
