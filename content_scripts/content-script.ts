@@ -23,9 +23,21 @@ interface chromeOnChange {
     }
 })()
 
+// init function to set by dynamic import
 let selectWordAtCursor: ((event: MouseEvent, clickedElement: HTMLElement) => WordSelection)
 
+// set inital active session / get if there is a setting already
 let activeSession: boolean = false;
+new Promise((resolve, reject) => {
+    chrome.storage.local.get(['isActiveSession_local'], (response: StorageResponse) => {
+            !response['isActiveSession_local'] ?
+            reject() : resolve(response['isActiveSession_local'])
+    })})
+.then((response) => { if (response === (true || false)) activeSession = response })
+.catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`) })
+
+
+// change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus)
 
 function updateActiveSessionStatus(changes: chromeOnChange) {
@@ -35,6 +47,8 @@ function updateActiveSessionStatus(changes: chromeOnChange) {
 function processClickEvent(event: MouseEvent): void {
 
     if(!activeSession) return
+
+    // add to options (turn on/off)
     event.preventDefault()
 
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
@@ -51,7 +65,8 @@ function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
     
     if (!selectWordAtCursor) throw new Error("selectWordAtCurson not found")
     const wordAtCursor: WordSelection = selectWordAtCursor(event, clickedElement)
-
+    
+    if (!wordAtCursor) return
     const {
         word: selectedWord,
         wordStartIndex: selectedStart,

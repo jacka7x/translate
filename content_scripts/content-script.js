@@ -20,8 +20,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         document.addEventListener('click', (event) => processClickEvent(event));
     }
 }))();
+// init function to set by dynamic import
 let selectWordAtCursor;
+// set inital active session / get if there is a setting already
 let activeSession = false;
+new Promise((resolve, reject) => {
+    chrome.storage.local.get(['isActiveSession_local'], (response) => {
+        !response['isActiveSession_local'] ?
+            reject() : resolve(response['isActiveSession_local']);
+    });
+})
+    .then((response) => { if (response === (true || false))
+    activeSession = response; })
+    .catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`); });
+// change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus);
 function updateActiveSessionStatus(changes) {
     var _a;
@@ -30,6 +42,7 @@ function updateActiveSessionStatus(changes) {
 function processClickEvent(event) {
     if (!activeSession)
         return;
+    // add to options (turn on/off)
     event.preventDefault();
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement = event.target;
@@ -44,6 +57,8 @@ function hilightWord(event, clickedElement) {
     if (!selectWordAtCursor)
         throw new Error("selectWordAtCurson not found");
     const wordAtCursor = selectWordAtCursor(event, clickedElement);
+    if (!wordAtCursor)
+        return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
     console.log(`Selected word: ${selectedWord}`);
     const span = createSpanElement(selectedWord);
