@@ -8,11 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// dynamic import word-selection.js
+// dynamic import modules
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const wordSelectionJS = chrome.runtime.getURL('/content_scripts/word-selection.js');
-    const contentScript = yield import(wordSelectionJS);
-    selectWordAtCursor = contentScript.wordSelectionImport;
+    const translationJS = yield import(chrome.runtime.getURL('../modules/translation.js'));
+    translate = translationJS.translate;
+    // check this and change?
+    const wordSelectionJS = yield import(chrome.runtime.getURL('../modules/word-selection.js'));
+    selectWordAtCursor = wordSelectionJS.wordSelectionImport;
     if (!selectWordAtCursor) {
         throw new Error(`wordSelect not found. Possible import failure`);
     }
@@ -20,8 +22,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         document.addEventListener('click', (event) => processClickEvent(event));
     }
 }))();
-// init function to set by dynamic import
+// init functions to set by dynamic import
 let selectWordAtCursor;
+let translate;
 // set inital active session / get if there is a setting already
 let activeSession = false;
 new Promise((resolve, reject) => {
@@ -29,8 +32,7 @@ new Promise((resolve, reject) => {
         !response['isActiveSession_local'] ?
             reject() : resolve(response['isActiveSession_local']);
     });
-})
-    .then((response) => { if (response === (true || false))
+}).then((response) => { if (response === (true || false))
     activeSession = response; })
     .catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`); });
 // change activeSession here when storage is updated by popup
@@ -60,6 +62,13 @@ function hilightWord(event, clickedElement) {
     if (!wordAtCursor)
         return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
+    // put here temp for testing
+    try {
+        translate(selectedWord, 'en', 'ko');
+    }
+    catch (e) {
+        console.log(e);
+    }
     console.log(`Selected word: ${selectedWord}`);
     const span = createSpanElement(selectedWord);
     // split text node before and after selected word

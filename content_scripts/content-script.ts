@@ -10,11 +10,16 @@ interface chromeOnChange {
     [key: string]: chrome.storage.StorageChange
 }
 
-// dynamic import word-selection.js
+type supportedLang = 'en' | 'ko'
+
+// dynamic import modules
 (async () => {
-    const wordSelectionJS: string = chrome.runtime.getURL('/content_scripts/word-selection.js')
-    const contentScript = await import(wordSelectionJS)
-    selectWordAtCursor = contentScript.wordSelectionImport
+    const translationJS = await import(chrome.runtime.getURL('../modules/translation.js'))
+    translate = translationJS.translate
+
+    // check this and change?
+    const wordSelectionJS = await import(chrome.runtime.getURL('../modules/word-selection.js'))
+    selectWordAtCursor = wordSelectionJS.wordSelectionImport
 
     if(!selectWordAtCursor){
         throw new Error (`wordSelect not found. Possible import failure`)
@@ -23,18 +28,19 @@ interface chromeOnChange {
     }
 })()
 
-// init function to set by dynamic import
+// init functions to set by dynamic import
 let selectWordAtCursor: ((event: MouseEvent, clickedElement: HTMLElement) => WordSelection)
+let translate: (inputText: string, fromLang: supportedLang, toLang: supportedLang) => string | null
 
 // set inital active session / get if there is a setting already
 let activeSession: boolean = false;
+
 new Promise((resolve, reject) => {
     chrome.storage.local.get(['isActiveSession_local'], (response: StorageResponse) => {
             !response['isActiveSession_local'] ?
             reject() : resolve(response['isActiveSession_local'])
-    })})
-.then((response) => { if (response === (true || false)) activeSession = response })
-.catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`) })
+})}).then((response) => { if (response === (true || false)) activeSession = response })
+    .catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`) })
 
 
 // change activeSession here when storage is updated by popup
@@ -74,6 +80,9 @@ function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
         nodes,
         nodeIndex
     } = wordAtCursor
+
+    // put here temp for testing
+    try { translate(selectedWord, 'en', 'ko') } catch(e) { console.log(e) }
     
     console.log(`Selected word: ${selectedWord}`)
 

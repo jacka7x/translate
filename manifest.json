@@ -24,6 +24,8 @@
         "storage"
     ],
 
+    "host_permissions": ["https://api.com"],
+
     "background": {
         "service_worker": "/background_scripts/background.js"
     },
@@ -37,7 +39,10 @@
 
     "web_accessible_resources": [
         {
-        "resources": ["/content_scripts/word-selection.js"],
+        "resources": [
+            "/modules/word-selection.js",
+            "/modules/translation.js"
+        ],
         "matches": ["<all_urls>"]
         }
     ] 
