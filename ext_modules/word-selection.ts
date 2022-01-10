@@ -10,6 +10,7 @@ const wordSelectionImport = (() => {
         wordEndIndex: number
         nodes: NodeList 
         nodeIndex: number
+        rects: DOMRectList
     }
 
     function getCurrentMousePosition(event: MouseEvent): MouseCoordinates {
@@ -67,9 +68,9 @@ const wordSelectionImport = (() => {
                 let rects: DOMRectList = wordRange.getClientRects();
                 let clickedRect: DOMRect | false = isClickInRects(rects, cursorPosition)
 
-                if (clickedRect) {   
-                    return { 
-                        word, wordStartIndex, wordEndIndex, nodes, nodeIndex 
+                if (clickedRect) {  
+                    return {
+                        word, wordStartIndex, wordEndIndex, nodes, nodeIndex, rects
                     }
                 } else {
                     wordStartIndex = wordEndIndex + 1;

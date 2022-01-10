@@ -1,0 +1,14 @@
+.quick-translation-box {
+  position: absolute;
+  height: 4rem;
+  width: fit-content;
+  background-color: #202020c4;
+  color: turquoise;
+  border-radius: 0.8rem;
+  font-size: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*# sourceMappingURL=style.css.map */

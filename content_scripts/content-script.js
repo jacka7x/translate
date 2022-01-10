@@ -1,4 +1,5 @@
 "use strict";
+// INTERFACES ----------------||
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,13 +9,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// INITAL LOAD START -----------||
-// dynamic import modules
+// GLOBAL VARIABLES ------------||
+// set inital active session
+let activeSession = false;
+// for hover timeout function
+let timeout;
+const hoverDelay = 300;
+// translation variables
+let fromLang = 'en';
+let toLang = 'ko';
+// init functions to set by dynamic import
+let selectWordAtCursor;
+let translate;
+// INITAL LOAD ------------------||
+// dynamic import modules // event listeners //
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const translationJS = yield import(chrome.runtime.getURL('../modules/translation.js'));
+    const translationJS = yield import(chrome.runtime.getURL('../ext_modules/translation.js'));
     translate = translationJS.translate;
     // check this and change?
-    const wordSelectionJS = yield import(chrome.runtime.getURL('../modules/word-selection.js'));
+    const wordSelectionJS = yield import(chrome.runtime.getURL('../ext_modules/word-selection.js'));
     selectWordAtCursor = wordSelectionJS.wordSelectionImport;
     if (!selectWordAtCursor) {
         throw new Error(`wordSelect not found. Possible import failure`);
@@ -22,14 +35,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     else {
         document.addEventListener('click', (event) => processClickEvent(event));
     }
-}))();
-// init functions to set by dynamic import
-let selectWordAtCursor;
-let translate;
-// set inital active session
-let activeSession = false;
-// get inital isActiveSession_local value, set to activeSession
-(() => __awaiter(void 0, void 0, void 0, function* () {
+    // get inital isActiveSession_local value, set to activeSession
     try {
         const response = yield chrome.storage.local.get(['isActiveSession_local']);
         const sessionResponse = response['isActiveSession_local'];
@@ -44,7 +50,9 @@ let activeSession = false;
 }))();
 // change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus);
-// INITAL LOAD END -----------||
+// translate word on hover (change to pointermove?)
+document.addEventListener('mousemove', (event) => hoverEvent(event, hoverDelay));
+// FUNCTIONS ------------||
 function updateActiveSessionStatus(changes) {
     var _a;
     activeSession = (_a = changes['isActiveSession_local']) === null || _a === void 0 ? void 0 : _a['newValue'];
@@ -63,6 +71,38 @@ function processClickEvent(event) {
         hilightWord(event, clickedElement);
     }
 }
+function processHoverEvent(event) {
+    if (!activeSession)
+        return;
+    // add options to turn on off??
+    event.preventDefault();
+    const hoveredElement = event.target;
+    if (hoveredElement.nodeName == 'SPAN' && hoveredElement.classList.contains('selected')) {
+        // get information saved in span
+    }
+    else {
+        displayQuickTranslation(event, hoveredElement);
+    }
+}
+// works using global 'timeout' variable
+function hoverEvent(event, delay) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => processHoverEvent(event), delay);
+}
+function displayQuickTranslation(event, hoveredElement) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!selectWordAtCursor)
+            throw new Error("selectWordAtCurson not found");
+        const wordAtCursor = selectWordAtCursor(event, hoveredElement);
+        if (!wordAtCursor)
+            return;
+        const text = wordAtCursor.word;
+        const rects = wordAtCursor.rects;
+        const translatedText = yield translate(text, fromLang, toLang);
+        translationPopupBox(translatedText, rects);
+        console.log(`DISPLAY TEST: ${translatedText}`);
+    });
+}
 function hilightWord(event, clickedElement) {
     if (!selectWordAtCursor)
         throw new Error("selectWordAtCurson not found");
@@ -72,7 +112,7 @@ function hilightWord(event, clickedElement) {
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
     // put here temp for testing
     try {
-        translate(selectedWord, 'en', 'ko');
+        translate(selectedWord, fromLang, toLang);
     }
     catch (e) {
         console.log(e);
@@ -104,5 +144,20 @@ function createSpanElement(selectedWord) {
     span.innerText = selectedWord;
     span.style.color = "red";
     span.style.backgroundColor = "yellow";
+    span.style.borderRadius = "1.2rem";
     return span;
+}
+function translationPopupBox(text, rects) {
+    var _a, _b, _c;
+    console.log((_a = rects[0]) === null || _a === void 0 ? void 0 : _a.x);
+    // make into function
+    const div = document.createElement("div");
+    div.classList.add('quick-translation-box');
+    div.innerText = text ? text : "No Translation.";
+    document.body.appendChild(div);
+    console.log();
+    console.log(div.style.height);
+    div.style.top = `${((_b = rects[0]) === null || _b === void 0 ? void 0 : _b.y) - parseInt(window.getComputedStyle(div).height)}px`;
+    div.style.left = `${(_c = rects[0]) === null || _c === void 0 ? void 0 : _c.x}px`;
+    console.log(div.style);
 }

@@ -41,7 +41,7 @@ const wordSelectionImport = (() => {
                 let clickedRect = isClickInRects(rects, cursorPosition);
                 if (clickedRect) {
                     return {
-                        word, wordStartIndex, wordEndIndex, nodes, nodeIndex
+                        word, wordStartIndex, wordEndIndex, nodes, nodeIndex, rects
                     };
                 }
                 else {

@@ -1,7 +1,7 @@
 
 // API key should be hidden in backend (and new key generated)
 // For now, keep in apikey.txt (.gitignore)
-const subscriptionKey: string = 'APIKEY'
+const subscriptionKey: string = '22c1faa52e564c72ab2a2946d457a429'
 const endpoint: string = 'https://api.cognitive.microsofttranslator.com'
 const region: string = 'koreacentral'
 
@@ -29,7 +29,11 @@ async function translate(inputText: string,
         const data = await response.json()
         const translationResult = data?.[0]?.["translations"]?.[0]?.["text"]
 
-        console.log(translationResult ? translationResult : "No translation found.")
+        if (!translationResult || translationResult.length === 0){
+            console.error('No translation found')
+            return null
+        }
+
         return translationResult
 
     } catch (error) {
