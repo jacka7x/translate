@@ -9,10 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // API key should be hidden in backend (and new key generated)
 // For now, keep in apikey.txt (.gitignore)
-const subscriptionKey = '035f3a01345d4519b0579ca20757717c';
+const subscriptionKey = 'APIKEY';
 const endpoint = 'https://api.cognitive.microsofttranslator.com';
 const region = 'koreacentral';
 function translate(inputText, fromLang, toLang) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const url = `/translate?api-version=3.0&to=${toLang}&from=${fromLang}`;
@@ -28,7 +29,7 @@ function translate(inputText, fromLang, toLang) {
             };
             const response = yield fetch(endpoint + url, options);
             const data = yield response.json();
-            const translationResult = data[0]["translations"][0]["text"];
+            const translationResult = (_c = (_b = (_a = data === null || data === void 0 ? void 0 : data[0]) === null || _a === void 0 ? void 0 : _a["translations"]) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c["text"];
             console.log(translationResult ? translationResult : "No translation found.");
             return translationResult;
         }

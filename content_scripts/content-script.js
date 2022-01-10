@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// INITAL LOAD START -----------||
 // dynamic import modules
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const translationJS = yield import(chrome.runtime.getURL('../modules/translation.js'));
@@ -25,18 +26,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 // init functions to set by dynamic import
 let selectWordAtCursor;
 let translate;
-// set inital active session / get if there is a setting already
+// set inital active session
 let activeSession = false;
-new Promise((resolve, reject) => {
-    chrome.storage.local.get(['isActiveSession_local'], (response) => {
-        !response['isActiveSession_local'] ?
-            reject() : resolve(response['isActiveSession_local']);
-    });
-}).then((response) => { if (response === (true || false))
-    activeSession = response; })
-    .catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`); });
+// get inital isActiveSession_local value, set to activeSession
+(() => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield chrome.storage.local.get(['isActiveSession_local']);
+        const sessionResponse = response['isActiveSession_local'];
+        if (sessionResponse === true || sessionResponse === false)
+            activeSession = sessionResponse;
+        else
+            throw new Error(`sesionResponse not found: ${sessionResponse}`);
+    }
+    catch (error) {
+        console.error(error);
+    }
+}))();
 // change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus);
+// INITAL LOAD END -----------||
 function updateActiveSessionStatus(changes) {
     var _a;
     activeSession = (_a = changes['isActiveSession_local']) === null || _a === void 0 ? void 0 : _a['newValue'];

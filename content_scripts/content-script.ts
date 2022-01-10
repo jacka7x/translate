@@ -12,6 +12,8 @@ interface chromeOnChange {
 
 type supportedLang = 'en' | 'ko'
 
+// INITAL LOAD START -----------||
+
 // dynamic import modules
 (async () => {
     const translationJS = await import(chrome.runtime.getURL('../modules/translation.js'))
@@ -32,19 +34,25 @@ type supportedLang = 'en' | 'ko'
 let selectWordAtCursor: ((event: MouseEvent, clickedElement: HTMLElement) => WordSelection)
 let translate: (inputText: string, fromLang: supportedLang, toLang: supportedLang) => string | null
 
-// set inital active session / get if there is a setting already
+// set inital active session
 let activeSession: boolean = false;
 
-new Promise((resolve, reject) => {
-    chrome.storage.local.get(['isActiveSession_local'], (response: StorageResponse) => {
-            !response['isActiveSession_local'] ?
-            reject() : resolve(response['isActiveSession_local'])
-})}).then((response) => { if (response === (true || false)) activeSession = response })
-    .catch((response) => { throw new Error(`Wrong isActiveSession_local response: ${response}`) })
-
+// get inital isActiveSession_local value, set to activeSession
+(async () => {
+    try{
+        const response = await chrome.storage.local.get(['isActiveSession_local'])
+        const sessionResponse = response['isActiveSession_local']
+        if(sessionResponse === true || sessionResponse === false) activeSession = sessionResponse
+        else throw new Error(`sesionResponse not found: ${sessionResponse}`)
+    } catch(error) {
+        console.error(error)
+    }
+})()
 
 // change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus)
+
+// INITAL LOAD END -----------||
 
 function updateActiveSessionStatus(changes: chromeOnChange) {
     activeSession = changes['isActiveSession_local']?.['newValue']

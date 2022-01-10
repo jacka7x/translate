@@ -47,7 +47,7 @@ const activeSessionToggle = async (): Promise<void> => {
 }
 
 // run at start to set up button
-( async function() {
+(async function() {
     try {
         if (sessionInitButton) {
             const response: boolean | undefined = await getSessionActive()

@@ -27,7 +27,7 @@ async function translate(inputText: string,
 
         const response = await fetch(endpoint + url, options)
         const data = await response.json()
-        const translationResult = data[0]["translations"][0]["text"]
+        const translationResult = data?.[0]?.["translations"]?.[0]?.["text"]
 
         console.log(translationResult ? translationResult : "No translation found.")
         return translationResult
