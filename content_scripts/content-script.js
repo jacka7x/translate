@@ -67,7 +67,7 @@ function processClickEvent(event) {
         removeHilightFromWord(clickedElement);
     }
     else {
-        hilightWord_clicked(event, clickedElement);
+        hilightWord(event, clickedElement, 'clicked');
     }
 }
 function processHoverEvent(event) {
@@ -84,7 +84,7 @@ function processHoverEvent(event) {
         if (!wordAtCursor)
             return;
         console.log(wordAtCursor.word);
-        hilightWord_hovered();
+        hilightWord(event, hoveredElement, 'hovered');
         // maybe move this?
         // displayQuickTranslation(event, hoveredElement)
     }
@@ -106,13 +106,13 @@ function displayQuickTranslation(event, hoveredElement) {
         console.log(`DISPLAY TEST: ${translatedText}`);
     });
 }
-function hilightWord_clicked(event, clickedElement) {
-    const wordAtCursor = selectWordAtCursor(event, clickedElement);
+function hilightWord(event, elementAtCursor, hilight) {
+    const wordAtCursor = selectWordAtCursor(event, elementAtCursor);
     if (!wordAtCursor)
         return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
-    console.log(`Selected word: ${selectedWord}`);
-    const span = createSpanElement(selectedWord);
+    console.log(`Word ${hilight}: ${selectedWord}`);
+    const span = createSpanElement(selectedWord, hilight);
     // split text node before and after selected word
     nodes[nodeIndex].splitText(selectedStart).splitText(selectedEnd - selectedStart);
     const nextNode = nodes[nodeIndex + 1];
@@ -120,25 +120,31 @@ function hilightWord_clicked(event, clickedElement) {
     if (!nextNode || !nextNode_2)
         throw new Error('Missing node.');
     // remove middle split node
-    clickedElement.removeChild(nextNode);
+    elementAtCursor.removeChild(nextNode);
     // append between remaining split nodes
-    clickedElement.insertBefore(span, nextNode_2);
+    elementAtCursor.insertBefore(span, nextNode_2);
 }
-function hilightWord_hovered() {
-    console.log("bingo");
-}
-function removeHilightFromWord(clickedElement) {
-    const textNode = document.createTextNode(clickedElement.innerText);
-    const clickedElementParent = clickedElement.parentNode;
+function removeHilightFromWord(elementAtCursor) {
+    const textNode = document.createTextNode(elementAtCursor.innerText);
+    const elementAtCursorParent = elementAtCursor.parentNode;
     // replace span with textNode and normalize
-    clickedElementParent === null || clickedElementParent === void 0 ? void 0 : clickedElementParent.insertBefore(textNode, clickedElement);
-    clickedElement.remove();
-    clickedElementParent === null || clickedElementParent === void 0 ? void 0 : clickedElementParent.normalize();
+    elementAtCursorParent === null || elementAtCursorParent === void 0 ? void 0 : elementAtCursorParent.insertBefore(textNode, elementAtCursor);
+    elementAtCursor.remove();
+    elementAtCursorParent === null || elementAtCursorParent === void 0 ? void 0 : elementAtCursorParent.normalize();
 }
-function createSpanElement(selectedWord) {
+function createSpanElement(selectedWord, hilight) {
+    // create span
     const span = document.createElement("span");
-    span.classList.add('selected', 'hilight-box');
     span.innerText = selectedWord;
+    span.classList.add(`hilight-box-${hilight}`);
+    // alter span based on clicked/hovered input
+    if (hilight === 'clicked')
+        span.classList.add('selected');
+    if (hilight === 'hovered') {
+        span.addEventListener('mouseout', () => {
+            removeHilightFromWord(span);
+        });
+    }
     return span;
 }
 function translationPopupBox(text, rects) {

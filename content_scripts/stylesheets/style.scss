@@ -12,12 +12,15 @@
     align-items: center;
 }
 
-.hilight-box{
+
+// class name must match variable 'hilight' in createSpanElement() in content-script.js
+.hilight-box-clicked{
     color: red;
     background-color: yellow;
 }
 
-.hover-box{
+// class name must match variable 'hilight' in createSpanElement() in content-script.js
+.hilight-box-hovered{
     color: lightblue;
     background-color: #202020;
 }

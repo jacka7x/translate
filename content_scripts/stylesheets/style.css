@@ -10,12 +10,12 @@
   align-items: center;
 }
 
-.hilight-box {
+.hilight-box-clicked {
   color: red;
   background-color: yellow;
 }
 
-.hover-box {
+.hilight-box-hovered {
   color: lightblue;
   background-color: #202020;
 }

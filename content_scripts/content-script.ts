@@ -14,6 +14,7 @@ interface chromeOnChange {
 }
 
 type supportedLang = 'en' | 'ko'
+type hilight = 'clicked' | 'hovered'
 
 // GLOBAL VARIABLES ------------||
 
@@ -85,7 +86,7 @@ function processClickEvent(event: MouseEvent): void {
     if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
         removeHilightFromWord(clickedElement)
     } else {
-        hilightWord_clicked(event, clickedElement)
+        hilightWord(event, clickedElement, 'clicked')
     }
 }
 
@@ -106,7 +107,7 @@ function processHoverEvent(event: MouseEvent) {
 
         console.log(wordAtCursor.word)
 
-        hilightWord_hovered()
+        hilightWord(event, hoveredElement, 'hovered')
 
         // maybe move this?
         // displayQuickTranslation(event, hoveredElement)
@@ -133,9 +134,9 @@ async function displayQuickTranslation(event: MouseEvent, hoveredElement: HTMLEl
     console.log(`DISPLAY TEST: ${translatedText}`)
 }
 
-function hilightWord_clicked(event: MouseEvent, clickedElement: HTMLElement): void {
+function hilightWord(event: MouseEvent, elementAtCursor: HTMLElement, hilight: hilight): void {
     
-    const wordAtCursor: WordSelection | null = selectWordAtCursor(event, clickedElement)
+    const wordAtCursor: WordSelection | null = selectWordAtCursor(event, elementAtCursor)
     
     if (!wordAtCursor) return
     const {
@@ -146,9 +147,9 @@ function hilightWord_clicked(event: MouseEvent, clickedElement: HTMLElement): vo
         nodeIndex
     } = wordAtCursor
     
-    console.log(`Selected word: ${selectedWord}`)
+    console.log(`Word ${hilight}: ${selectedWord}`)
 
-    const span: HTMLSpanElement = createSpanElement(selectedWord);
+    const span: HTMLSpanElement = createSpanElement(selectedWord, hilight);
 
     // split text node before and after selected word
     (nodes[nodeIndex] as Text).splitText(selectedStart).splitText(selectedEnd-selectedStart)
@@ -158,31 +159,38 @@ function hilightWord_clicked(event: MouseEvent, clickedElement: HTMLElement): vo
     if (!nextNode || !nextNode_2) throw new Error('Missing node.')
 
     // remove middle split node
-    clickedElement.removeChild(nextNode)
+    elementAtCursor.removeChild(nextNode)
 
     // append between remaining split nodes
-    clickedElement.insertBefore(span, nextNode_2)
+    elementAtCursor.insertBefore(span, nextNode_2)
 }
 
-function hilightWord_hovered() {
-    console.log("bingo")
-}
+function removeHilightFromWord(elementAtCursor: HTMLSpanElement) {
 
-function removeHilightFromWord(clickedElement: HTMLSpanElement) {
-
-    const textNode: Text = document.createTextNode(clickedElement.innerText)
-    const clickedElementParent: ParentNode | null = clickedElement.parentNode
+    const textNode: Text = document.createTextNode(elementAtCursor.innerText)
+    const elementAtCursorParent: ParentNode | null = elementAtCursor.parentNode
 
     // replace span with textNode and normalize
-    clickedElementParent?.insertBefore(textNode, clickedElement)
-    clickedElement.remove()
-    clickedElementParent?.normalize()
+    elementAtCursorParent?.insertBefore(textNode, elementAtCursor)
+    elementAtCursor.remove()
+    elementAtCursorParent?.normalize()
 }
 
-function createSpanElement(selectedWord: string): HTMLSpanElement {
+function createSpanElement(selectedWord: string, hilight: hilight): HTMLSpanElement {
+
+    // create span
     const span = document.createElement("span")
-    span.classList.add('selected', 'hilight-box')
     span.innerText = selectedWord
+    span.classList.add(`hilight-box-${hilight}`)
+
+    // alter span based on clicked/hovered input
+    if (hilight === 'clicked') span.classList.add('selected')
+    if (hilight === 'hovered') {
+        span.addEventListener('mouseout', () => {
+            removeHilightFromWord(span)
+        })
+    }
+
     return span;
 }
 
