@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // API key should be hidden in backend (and new key generated)
 // For now, keep in apikey.txt (.gitignore)
-const subscriptionKey = '22c1faa52e564c72ab2a2946d457a429';
+const subscriptionKey = 'APIKEY';
 const endpoint = 'https://api.cognitive.microsofttranslator.com';
 const region = 'koreacentral';
 function translate(inputText, fromLang, toLang) {

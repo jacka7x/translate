@@ -5,10 +5,20 @@
 
     background-color: #202020c4;
     color: turquoise;
-    border-radius: 0.8rem;
 
     font-size: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
+.hilight-box{
+    color: red;
+    background-color: yellow;
+}
+
+.hover-box{
+    color: lightblue;
+    background-color: #202020;
+}
+

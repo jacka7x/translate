@@ -22,39 +22,38 @@ let activeSession: boolean = false;
 
 // for hover timeout function
 let timeout: number
-const hoverDelay: number = 300;
+const hoverDelay: number = 100;
 
 // translation variables
 let fromLang: supportedLang = 'en'
 let toLang: supportedLang = 'ko'
 
 // init functions to set by dynamic import
-let selectWordAtCursor: ((event: MouseEvent, clickedElement: HTMLElement) => WordSelection)
+let selectWordAtCursor: (event: MouseEvent, clickedElement: HTMLElement) => WordSelection | null
 let translate: (inputText: string, fromLang: supportedLang, toLang: supportedLang) => Promise <string | null>
 
 // INITAL LOAD ------------------||
 
 // dynamic import modules // event listeners //
 (async () => {
-    const translationJS = await import(chrome.runtime.getURL('../ext_modules/translation.js'))
-    translate = translationJS.translate
+    try {
 
-    // check this and change?
-    const wordSelectionJS = await import(chrome.runtime.getURL('../ext_modules/word-selection.js'))
-    selectWordAtCursor = wordSelectionJS.wordSelectionImport
+        const translationJS = await import(chrome.runtime.getURL('../ext_modules/translation.js'))
+        translate = translationJS.translate
+        if(!translate) throw new Error('Translate not found. Possible import failure.')
 
-    if(!selectWordAtCursor){
-        throw new Error (`wordSelect not found. Possible import failure`)
-    } else {
-        document.addEventListener('click', (event) => processClickEvent(event))
-    }
+        // word-selection.js
+        const wordSelectionJS = await import(chrome.runtime.getURL('../ext_modules/word-selection.js'))
+        selectWordAtCursor = wordSelectionJS.selectWordAtCursor
+        if(!selectWordAtCursor) throw new Error ('wordSelect not found. Possible import failure')
 
-    // get inital isActiveSession_local value, set to activeSession
-    try{
+        // get inital isActiveSession_local value, set to activeSession
         const response = await chrome.storage.local.get(['isActiveSession_local'])
         const sessionResponse = response['isActiveSession_local']
-        if(sessionResponse === true || sessionResponse === false) activeSession = sessionResponse
+
+        if([true, false].includes(sessionResponse)) activeSession = sessionResponse
         else throw new Error(`sesionResponse not found: ${sessionResponse}`)
+
     } catch(error) {
         console.error(error)
     }
@@ -63,8 +62,9 @@ let translate: (inputText: string, fromLang: supportedLang, toLang: supportedLan
 // change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus)
 
-// translate word on hover (change to pointermove?)
-document.addEventListener('mousemove', (event) => hoverEvent(event, hoverDelay)) 
+// EL for hovering and clicking
+document.addEventListener('mousemove', (event) => hoverEventTimeoutStart(event, hoverDelay)) 
+document.addEventListener('click', (event) => processClickEvent(event))
 
 // FUNCTIONS ------------||
 
@@ -85,35 +85,43 @@ function processClickEvent(event: MouseEvent): void {
     if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
         removeHilightFromWord(clickedElement)
     } else {
-        hilightWord(event, clickedElement)
+        hilightWord_clicked(event, clickedElement)
     }
 }
 
 function processHoverEvent(event: MouseEvent) {
 
     if(!activeSession) return
-
     // add options to turn on off??
     event.preventDefault()
 
     const hoveredElement: HTMLElement | null = <HTMLElement>event.target
-
+    
     if (hoveredElement.nodeName == 'SPAN' && hoveredElement.classList.contains('selected')) {
-        // get information saved in span
+        // stuff if there is already a click/hover span there
     } else {
-        displayQuickTranslation(event, hoveredElement)
+
+        const wordAtCursor: WordSelection | null = selectWordAtCursor(event, hoveredElement)
+        if (!wordAtCursor) return
+
+        console.log(wordAtCursor.word)
+
+        hilightWord_hovered()
+
+        // maybe move this?
+        // displayQuickTranslation(event, hoveredElement)
     }
 }
 
 // works using global 'timeout' variable
-function hoverEvent(event: MouseEvent, delay: number): void {
+function hoverEventTimeoutStart(event: MouseEvent, delay: number): void {
     clearTimeout(timeout)
     timeout = setTimeout(() => processHoverEvent(event), delay)
 }
 
 async function displayQuickTranslation(event: MouseEvent, hoveredElement: HTMLElement){
-    if (!selectWordAtCursor) throw new Error("selectWordAtCurson not found")
-    const wordAtCursor: WordSelection = selectWordAtCursor(event, hoveredElement)
+
+    const wordAtCursor: WordSelection | null = selectWordAtCursor(event, hoveredElement)
     
     if (!wordAtCursor) return
     const text = wordAtCursor.word
@@ -125,10 +133,9 @@ async function displayQuickTranslation(event: MouseEvent, hoveredElement: HTMLEl
     console.log(`DISPLAY TEST: ${translatedText}`)
 }
 
-function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
+function hilightWord_clicked(event: MouseEvent, clickedElement: HTMLElement): void {
     
-    if (!selectWordAtCursor) throw new Error("selectWordAtCurson not found")
-    const wordAtCursor: WordSelection = selectWordAtCursor(event, clickedElement)
+    const wordAtCursor: WordSelection | null = selectWordAtCursor(event, clickedElement)
     
     if (!wordAtCursor) return
     const {
@@ -138,9 +145,6 @@ function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
         nodes,
         nodeIndex
     } = wordAtCursor
-
-    // put here temp for testing
-    try { translate(selectedWord, fromLang, toLang) } catch(e) { console.log(e) }
     
     console.log(`Selected word: ${selectedWord}`)
 
@@ -160,6 +164,10 @@ function hilightWord(event: MouseEvent, clickedElement: HTMLElement): void {
     clickedElement.insertBefore(span, nextNode_2)
 }
 
+function hilightWord_hovered() {
+    console.log("bingo")
+}
+
 function removeHilightFromWord(clickedElement: HTMLSpanElement) {
 
     const textNode: Text = document.createTextNode(clickedElement.innerText)
@@ -173,28 +181,27 @@ function removeHilightFromWord(clickedElement: HTMLSpanElement) {
 
 function createSpanElement(selectedWord: string): HTMLSpanElement {
     const span = document.createElement("span")
-    span.classList.add('selected')
+    span.classList.add('selected', 'hilight-box')
     span.innerText = selectedWord
-    span.style.color = "red"
-    span.style.backgroundColor = "yellow"
-    span.style.borderRadius = "1.2rem"
     return span;
 }
 
 function translationPopupBox(text: string | null, rects: DOMRectList) {
-    console.log(rects[0]?.x)
+    try {
 
-    // make into function
-    const div = document.createElement("div")
-    div.classList.add('quick-translation-box')
-    div.innerText = text ? text : "No Translation."
-    document.body.appendChild(div)
+        if (!rects[0]) throw new Error('Failed to get rects for selected word')
 
+        // make into function
+        const div = document.createElement("div")
+        div.classList.add('quick-translation-box')
+        div.innerText = text ? text : "No Translation."
+        document.body.appendChild(div)
 
-    console.log()
-    console.log(div.style.height);
-    div.style.top = `${rects[0]?.y - parseInt(window.getComputedStyle(div).height)}px`
-    div.style.left = `${rects[0]?.x}px`
+        const offset: number = parseInt(window.getComputedStyle(div).height)
+        div.style.top = `${rects[0]?.y - offset}px`
+        div.style.left = `${rects[0]?.x}px`
 
-    console.log(div.style)
+    } catch (error) {
+        console.error(error)
+    }
 }
