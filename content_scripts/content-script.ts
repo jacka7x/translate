@@ -23,7 +23,7 @@ let activeSession: boolean = false;
 
 // for hover timeout function
 let timeout: number
-const hoverDelay: number = 100;
+const hoverDelay: number = 400;
 
 // translation variables
 let fromLang: supportedLang = 'en'
@@ -116,8 +116,10 @@ function processHoverEvent(event: MouseEvent) {
 
 // works using global 'timeout' variable
 function hoverEventTimeoutStart(event: MouseEvent, delay: number): void {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => processHoverEvent(event), delay)
+    const timeout = setTimeout(() => processHoverEvent(event), delay)
+    document.addEventListener('mousemove', () => {
+        clearTimeout(timeout)
+    })
 }
 
 async function displayQuickTranslation(event: MouseEvent, hoveredElement: HTMLElement){

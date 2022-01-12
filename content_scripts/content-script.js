@@ -14,7 +14,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 let activeSession = false;
 // for hover timeout function
 let timeout;
-const hoverDelay = 100;
+const hoverDelay = 400;
 // translation variables
 let fromLang = 'en';
 let toLang = 'ko';
@@ -91,8 +91,10 @@ function processHoverEvent(event) {
 }
 // works using global 'timeout' variable
 function hoverEventTimeoutStart(event, delay) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => processHoverEvent(event), delay);
+    const timeout = setTimeout(() => processHoverEvent(event), delay);
+    document.addEventListener('mousemove', () => {
+        clearTimeout(timeout);
+    });
 }
 function displayQuickTranslation(event, hoveredElement) {
     return __awaiter(this, void 0, void 0, function* () {
