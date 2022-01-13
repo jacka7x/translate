@@ -13,8 +13,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 // set inital active session
 let activeSession = false;
 // for hover timeout function
-let timeout;
-const hoverDelay = 400;
+const hoverDelay = 100;
 // translation variables
 let fromLang = 'en';
 let toLang = 'ko';
@@ -25,12 +24,12 @@ let translate;
 // dynamic import modules // event listeners //
 (() => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const translationJS = yield import(chrome.runtime.getURL('../ext_modules/translation.js'));
+        const translationJS = yield import(chrome.runtime.getURL('/ext_modules/translation.js'));
         translate = translationJS.translate;
         if (!translate)
             throw new Error('Translate not found. Possible import failure.');
         // word-selection.js
-        const wordSelectionJS = yield import(chrome.runtime.getURL('../ext_modules/word-selection.js'));
+        const wordSelectionJS = yield import(chrome.runtime.getURL('/ext_modules/word-selection.js'));
         selectWordAtCursor = wordSelectionJS.selectWordAtCursor;
         if (!selectWordAtCursor)
             throw new Error('wordSelect not found. Possible import failure');
@@ -39,8 +38,13 @@ let translate;
         const sessionResponse = response['isActiveSession_local'];
         if ([true, false].includes(sessionResponse))
             activeSession = sessionResponse;
-        else
+        else {
+            // this may throw an error on first load, revisit how storage/options syncing should work
+            chrome.storage.local.set({ 'isActiveSession_local': false }, () => {
+                console.log('bingo');
+            });
             throw new Error(`sesionResponse not found: ${sessionResponse}`);
+        }
     }
     catch (error) {
         console.error(error);
@@ -49,7 +53,8 @@ let translate;
 // change activeSession here when storage is updated by popup
 chrome.storage.onChanged.addListener(updateActiveSessionStatus);
 // EL for hovering and clicking
-document.addEventListener('mousemove', (event) => hoverEventTimeoutStart(event, hoverDelay));
+// CREATE / DELETE THESE AS ACTIVESESSION IS TOGGLED
+document.addEventListener('mousemove', (event) => processHoverEvent(event));
 document.addEventListener('click', (event) => processClickEvent(event));
 // FUNCTIONS ------------||
 function updateActiveSessionStatus(changes) {
@@ -63,11 +68,11 @@ function processClickEvent(event) {
     event.preventDefault();
     // const cursorPosition: MouseCoordinates = getCurrentMousePosition(event)
     const clickedElement = event.target;
-    if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('selected')) {
-        removeHilightFromWord(clickedElement);
+    if (clickedElement.nodeName == 'SPAN' && clickedElement.classList.contains('highlight-box-clicked')) {
+        removeHighlightFromWord(clickedElement, 'bingo_change this later');
     }
     else {
-        hilightWord(event, clickedElement, 'clicked');
+        highlightWord(event, clickedElement, 'clicked');
     }
 }
 function processHoverEvent(event) {
@@ -76,45 +81,42 @@ function processHoverEvent(event) {
     // add options to turn on off??
     event.preventDefault();
     const hoveredElement = event.target;
-    if (hoveredElement.nodeName == 'SPAN' && hoveredElement.classList.contains('selected')) {
-        // stuff if there is already a click/hover span there
+    switch (checkSpan(hoveredElement)) {
+        case 'clicked': return;
+        case 'hovered': return;
+        case false:
     }
-    else {
-        const wordAtCursor = selectWordAtCursor(event, hoveredElement);
-        if (!wordAtCursor)
-            return;
-        console.log(wordAtCursor.word);
-        hilightWord(event, hoveredElement, 'hovered');
-        // maybe move this?
-        // displayQuickTranslation(event, hoveredElement)
-    }
-}
-// works using global 'timeout' variable
-function hoverEventTimeoutStart(event, delay) {
-    const timeout = setTimeout(() => processHoverEvent(event), delay);
+    const wordAtCursor = selectWordAtCursor(event, hoveredElement);
+    if (!wordAtCursor)
+        return;
+    // delay using gloabl hoverDelay variable
+    const timeout = setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+        // this should not run selectword again
+        const span = highlightWord(event, hoveredElement, 'hovered');
+        const translatedText = yield translate(wordAtCursor.word, fromLang, toLang);
+        if (span)
+            displayQuickTranslation(translatedText, span);
+    }), hoverDelay);
     document.addEventListener('mousemove', () => {
         clearTimeout(timeout);
     });
 }
-function displayQuickTranslation(event, hoveredElement) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const wordAtCursor = selectWordAtCursor(event, hoveredElement);
-        if (!wordAtCursor)
-            return;
-        const text = wordAtCursor.word;
-        const rects = wordAtCursor.rects;
-        const translatedText = yield translate(text, fromLang, toLang);
-        translationPopupBox(translatedText, rects);
-        console.log(`DISPLAY TEST: ${translatedText}`);
-    });
+function checkSpan(element) {
+    if (element.nodeName !== 'SPAN')
+        return false;
+    else if (element.classList.contains(`highlight-box-hovered`))
+        return 'hovered';
+    else if (element.classList.contains(`highlight-box-clicked`))
+        return 'clicked';
+    return false;
 }
-function hilightWord(event, elementAtCursor, hilight) {
+function highlightWord(event, elementAtCursor, highlight) {
     const wordAtCursor = selectWordAtCursor(event, elementAtCursor);
     if (!wordAtCursor)
         return;
     const { word: selectedWord, wordStartIndex: selectedStart, wordEndIndex: selectedEnd, nodes, nodeIndex } = wordAtCursor;
-    console.log(`Word ${hilight}: ${selectedWord}`);
-    const span = createSpanElement(selectedWord, hilight);
+    console.log(`Word ${highlight}: ${selectedWord}`);
+    const span = createSpanElement(selectedWord, highlight);
     // split text node before and after selected word
     nodes[nodeIndex].splitText(selectedStart).splitText(selectedEnd - selectedStart);
     const nextNode = nodes[nodeIndex + 1];
@@ -125,45 +127,44 @@ function hilightWord(event, elementAtCursor, hilight) {
     elementAtCursor.removeChild(nextNode);
     // append between remaining split nodes
     elementAtCursor.insertBefore(span, nextNode_2);
-}
-function removeHilightFromWord(elementAtCursor) {
-    const textNode = document.createTextNode(elementAtCursor.innerText);
-    const elementAtCursorParent = elementAtCursor.parentNode;
-    // replace span with textNode and normalize
-    elementAtCursorParent === null || elementAtCursorParent === void 0 ? void 0 : elementAtCursorParent.insertBefore(textNode, elementAtCursor);
-    elementAtCursor.remove();
-    elementAtCursorParent === null || elementAtCursorParent === void 0 ? void 0 : elementAtCursorParent.normalize();
-}
-function createSpanElement(selectedWord, hilight) {
-    // create span
-    const span = document.createElement("span");
-    span.innerText = selectedWord;
-    span.classList.add(`hilight-box-${hilight}`);
-    // alter span based on clicked/hovered input
-    if (hilight === 'clicked')
-        span.classList.add('selected');
-    if (hilight === 'hovered') {
-        span.addEventListener('mouseout', () => {
-            removeHilightFromWord(span);
-        });
-    }
     return span;
 }
-function translationPopupBox(text, rects) {
-    var _a, _b;
+function removeHighlightFromWord(elementAtCursor, selectedWord) {
+    const textNode = document.createTextNode(selectedWord);
+    const elementAtCursorParent = elementAtCursor.parentNode;
+    // replace span with textNode and normalize
     try {
-        if (!rects[0])
-            throw new Error('Failed to get rects for selected word');
-        // make into function
-        const div = document.createElement("div");
-        div.classList.add('quick-translation-box');
-        div.innerText = text ? text : "No Translation.";
-        document.body.appendChild(div);
-        const offset = parseInt(window.getComputedStyle(div).height);
-        div.style.top = `${((_a = rects[0]) === null || _a === void 0 ? void 0 : _a.y) - offset}px`;
-        div.style.left = `${(_b = rects[0]) === null || _b === void 0 ? void 0 : _b.x}px`;
+        if (!elementAtCursorParent) {
+            throw new Error(`elementAtCursorParent not found. ${elementAtCursorParent}`);
+        }
+        elementAtCursorParent.insertBefore(textNode, elementAtCursor);
+        elementAtCursor.remove();
+        elementAtCursorParent.normalize();
     }
     catch (error) {
         console.error(error);
     }
+}
+function createSpanElement(selectedWord, highlight) {
+    // create span
+    const span = document.createElement("span");
+    span.innerText = selectedWord;
+    span.classList.add(`highlight-box-${highlight}`);
+    if (highlight === 'clicked')
+        console.log('put a fuction here');
+    if (highlight === 'hovered') {
+        span.addEventListener('mouseout', () => {
+            removeHighlightFromWord(span, selectedWord);
+        });
+    }
+    return span;
+}
+function displayQuickTranslation(translatedText, span) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const div = document.createElement("div");
+        div.classList.add('quick-translation-box');
+        div.innerText = translatedText ? translatedText : 'No translation.';
+        span.appendChild(div);
+        console.log(`DISPLAY TEST: ${translatedText}`);
+    });
 }

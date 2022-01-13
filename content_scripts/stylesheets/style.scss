@@ -1,28 +1,40 @@
 .quick-translation-box{
     position: absolute;
-    height: 4rem;
-    width: fit-content;
+    top: 0px;
+    left: 50%;
 
-    background-color: #202020c4;
+    transform: translate(-50%, -115%);
+
+    padding: 0.4rem;
+    height: fit-content;
+    width: max-content;
+
+    background-color: #202020ea;
     color: turquoise;
 
     font-size: 2rem;
     display: flex;
     justify-content: center;
     align-items: center;
+
+    z-index: 2147483647;
 }
 
 
-// class name must match variable 'hilight' in createSpanElement() in content-script.js
-.hilight-box-clicked{
+// combine these with a common class?
+// class name must match variable 'hilight' in createSpanElement() in content-script.ts
+.highlight-box-clicked{
+    position: relative;
     color: red;
     background-color: yellow;
 }
 
-// class name must match variable 'hilight' in createSpanElement() in content-script.js
-.hilight-box-hovered{
-    color: lightblue;
-    background-color: #202020;
+// class name must match variable 'hilight' in createSpanElement() in content-script.ts
+.highlight-box-hovered{
+    position: relative;
+    top: 0px;
+    left: 0px;
+    outline: 1px solid #202020;
 }
 
 // add some fading transitions

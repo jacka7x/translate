@@ -1,8 +1,8 @@
 
 // API key should be hidden in backend (and new key generated)
 // For now, keep in apikey.txt (.gitignore)
-const subscriptionKey: string = 'APIKEY'
-const endpoint: string = 'https://api.cognitive.microsofttranslator.com'
+const subscriptionKey: string = '22c1faa52e564c72ab2a2946d457a429'
+const endpoint: string = 'API KEY'
 const region: string = 'koreacentral'
 
 // languages supported by extension

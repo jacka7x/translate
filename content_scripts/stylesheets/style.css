@@ -1,23 +1,31 @@
 .quick-translation-box {
   position: absolute;
-  height: 4rem;
-  width: fit-content;
-  background-color: #202020c4;
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%, -115%);
+  padding: 0.4rem;
+  height: fit-content;
+  width: max-content;
+  background-color: #202020ea;
   color: turquoise;
   font-size: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2147483647;
 }
 
-.hilight-box-clicked {
+.highlight-box-clicked {
+  position: relative;
   color: red;
   background-color: yellow;
 }
 
-.hilight-box-hovered {
-  color: lightblue;
-  background-color: #202020;
+.highlight-box-hovered {
+  position: relative;
+  top: 0px;
+  left: 0px;
+  outline: 1px solid #202020;
 }
 
 /*# sourceMappingURL=style.css.map */
